@@ -1,0 +1,44 @@
+# terraform.tfvars.example
+# AWS settings
+#
+aws_settings.access_key = ""
+aws_settings.secret_key = ""
+aws_settings.region     = ""
+#
+# AWS Requirements
+# Route53
+aws_route53.external    = ""
+aws_route53.internal    = ""
+# SSL Certificate for ELB (wildcard recommended)
+aws_elb_certificate     = ""
+# AWS key and matching local private key
+aws_key_name            = ""
+aws_private_key_file    = ""
+#
+# tf_hachef specific settings
+# Accept Chef MLSA
+accept_license          = ""
+# Base hostnames for backend (be) and frontend (fe)
+be_hostname             = ""
+fe_hostname             = ""
+# Hostname for ELB (service point)
+hostname                = ""
+# Domain name
+domain                  = ""
+# Path to SSL certificate information
+ssl_cert                = ""
+ssl_key                 = ""
+#
+# Chef server setup
+# Long form organization name
+chef_orgl               = ""
+# Short form organization name
+chef_orgs               = ""
+# Chef admin user e-mail
+chef_usre               = ""
+# Chef admin user first name
+chef_usrf               = ""
+# Chef admin user last name
+chef_usrl               = ""
+# Chef admin username
+chef_usrn               = ""
