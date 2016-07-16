@@ -1,8 +1,21 @@
 # tf_hachef
-Terraform module to setup a Chef Server in a HA architecture using
-chef-server-core and chef-backend. Once the cluster is up and running,
-recommend you use Chef to configure your Chef Server to suit your needs.
 
+This terraform plan makes use of chef-backend and chef-server-core to create a
+Chef HA architecture spread across multiple AWS availability zones within one
+AWS region. Cross region deployment is not supported with this plan or with
+chef-backend at this time.
+
+By default, this terraform plan will create a VPC, subnets, security groups,
+security group rules, frontend nodes (chef-server-core), backend nodes
+(chef-backend), and an AWS ELB comprised of the frontend nodes. Minimum pre-run
+setup required is uploading a SSL certificate and SSH key to AWS, as well as
+having a DNS zone defined in AWS's Route53 service (two zones, internal and
+external).
+
+This plan will deploy one (1) frontend and backend node to each AWS availability
+zone indicated in the map variable `aws_subnets`. Minimum required nodes for
+chef-backend is three (3), so please configure at least 3 subnets in different
+availability zones.
 
 ## Assumptions
 
@@ -15,16 +28,17 @@ recommend you use Chef to configure your Chef Server to suit your needs.
 * Uses public IPs and public DNS
 * Creates default security group as follows:
   * Frontend:
-    * 443/tcp: HTTPS
-    * 80/tcp: HTTP
+    * 443/tcp: HTTPS from anywhere
+    * 80/tcp: HTTP from anywhere
   * Backend:
     * ALL: inside security group
-    * 2379/tcp: from Frontend SG
-    * 5432/tcp: from Frontend SG
-    * 7331/tcp: from Frontend SG
-    * 9200/tcp: from Frontend SG
+    * 2379/tcp: etcd from Frontend SG
+    * 5432/tcp: PostgreSQL from Frontend SG
+    * 7331/tcp: leaderl from Frontend SG
+    * 9200/tcp: Elasticsearch from Frontend SG
   * SSH Security Group:
-    * 22/tcp: Default from anywhere, restrict with `${allowed_cidrs}`
+    * 22/tcp: SSH from anywhere (default), restrict with `${allowed_cidrs}`
+* Creates subnets spread across AWS AZs, minimum three (3) required
 * Understand Terraform and ability to read the source
 
 
@@ -49,6 +63,7 @@ Terraform has planned better support for maps passed to modules in version
 
 
 ## Supported OSes
+
 All supported OSes are 64-bit and HVM (though PV should be supported)
 
 * Ubuntu 12.04 LTS
@@ -179,7 +194,7 @@ ami_usermap.<ami_os> = "value"
 
 ## Runtime sample
 
-Unavailable at this time
+You can view a runtime output sample here: [tf_hachef_runtime.txt](https://gist.github.com/mengesb/0771c38a64d3dd7aa609dc31f5933bba)
 
 
 ## Contributing
