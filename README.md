@@ -7,17 +7,15 @@ chef-backend at this time.
 
 By default, this terraform plan will create a VPC, subnets, security groups,
 security group rules, frontend nodes (chef-server-core), backend nodes
-(chef-backend), and an AWS ELB comprised of the frontend nodes. Minimum pre-run
-setup required is uploading a SSL certificate and SSH key to AWS, as well as
-having a DNS zone defined in AWS's Route53 service (two zones, internal and
-external).
+(chef-backend), and an AWS ELB comprised of the frontend nodes.
 
-This plan will deploy one (1) frontend and backend node to each AWS availability
-zone indicated in the map variable `aws_subnets`. Minimum required nodes for
-chef-backend is three (3), so please configure at least 3 subnets in different
-availability zones.
+This plan is rather large and complex. Be sure to read through the
+[README](README.md) in full.
 
 ## Assumptions
+
+This terraform plan is designed for near-production use. Please take note as
+the requirements are extensive
 
 * Requires:
   * AWS (duh!)
@@ -37,7 +35,7 @@ availability zones.
     * 7331/tcp: leaderl from Frontend SG
     * 9200/tcp: Elasticsearch from Frontend SG
   * SSH Security Group:
-    * 22/tcp: SSH from anywhere (default), restrict with `${allowed_cidrs}`
+    * 22/tcp: SSH from anywhere (default), restrict with `${ssh_cidrs}` list
 * Creates subnets spread across AWS AZs, minimum three (3) required
 * Understand Terraform and ability to read the source
 
@@ -47,19 +45,18 @@ availability zones.
 
 ### Module
 
-Due to the extensive use of maps this isn't module compatible at this time.
-Terraform has planned better support for maps passed to modules in version
-0.7.0 but at the time of writing it is not available.
+Usage as a module has not been tested, however in Terraform 0.7.0 many things
+are first-class which were not before. Choose to run this way at your own risk
 
 
 ### Directly
 
 1. Clone this repo: `git clone https://github.com/mengesb/tf_hachef.git`
 2. Make a local terraform.tfvars file: `cp terraform.tfvars.example terraform.tfvars`
-3. Edit `terraform.tfvars` with your editor of choice, ensuring `accept_license` is set to `true`
-4. Get dependencies: `terraform get`
-5. Test the plan: `terraform plan`
-6. Apply the plan: `terraform apply`
+3. Edit `terraform.tfvars` with your editor of choice, ensuring
+`var.chef["accept_mlsa"]` is set to `true`
+4. Test the plan: `terraform plan`
+5. Apply the plan: `terraform apply`
 
 
 ## Supported OSes
@@ -76,83 +73,114 @@ All supported OSes are 64-bit and HVM (though PV should be supported)
 
 ## AWS
 
-These resources will incur charges on your AWS bill. It is your responsibility to delete the resources.
+These resources will incur charges on your AWS bill. It is your responsibility
+to delete the resources.
 
 
 ## Input variables
 
 
-### AWS variables (including AWS maps)
-
-* `aws_settings`: AWS provisioner settings map
+* `provider`: AWS provider settings
   * `access_key`: Your AWS key, usually referred to as `AWS_ACCESS_KEY_ID`
-  * `secret_key`: Your secret for your AWS key, usually referred to as `AWS_SECRET_ACCESS_KEY`
   * `region`: AWS region you want to deploy to. Default: `us-east-1`
-* `aws_vpc`: AWS VPC settings map
-  * `cidr_block`: CIDR block for VPC creation. Default: `10.20.30.0/24`
-  * `instance_tenancy`: AWS instance tenancy. Default: `default`
-  * `enable_dns_support`: Support DNS in VPC (required). Default: `true`
-  * `enable_dns_hostnames`: Support DNS hostnames (required). Default: `true`
-  * `tags_name`: AWS Name tag for VPC. Default: `Chef HA VPC`
-* `aws_subnets`: AWS map to create subnets in VPC
+  * `secret_key`: Your secret for your AWS key, usually referred to as `AWS_SECRET_ACCESS_KEY`
+* `vpc`: AWS VPC settings
+  * `cidr`: CIDR block for VPC creation. Default: `10.20.30.0/24`
+  * `dns_hostnames`: Support DNS hostnames (required). Default: `true`
+  * `dns_support`: Support DNS in VPC (required). Default: `true`
+  * `tags_desc`: AWS Name tag for VPC. Default: `Chef HA VPC`
+  * `tenancy`: AWS instance tenancy. Default: `default`
+* `subnets`: AWS subnet settings
+  * This map is a dynamic map. Please read below:
   * `KEY`: You create the key labeled as the availability zone (i.e us-east-1a)
   * Default keys: `us-east-1a`, `us-east-1c`, `us-east-1d`, `us-east-1e`
   * `VALUE`: Value is the CIDR subnet to create in that availability zone
   * Default values: `10.20.30.0/26`, `10.20.30.64/26`, `10.20.30.128/26`, `10.20.30.192/26`
-* `aws_subnet_map`: Subnet map defaulting the public IP assignment in that availability zone's subnet
-  * `KEY`: Must have the same keys as `aws_subnets`. Default: reference `aws_subnets`
+* `subnets_public`: Subnet map defaulting the public IP assignment in that availability zone's subnet
+  * `KEY`: Must have the same keys as `subnets`. Default: reference `subnets`
   * `VALUE`: Can be `true` or `false`. Default: `true`
-* `aws_route53`: Map for internal and external Route53 zone IDs
+* `ssh_cidrs`: List of CIDR ranges allowed SSH access. Default: `["0.0.0.0/0"]`
+* `ami`: AMI map for selecting the AMI
+  * The `KEY` is comprised of the `os`-`instance["(frontend|backend)_type"]`-`provider["region"]`
+  * The `value` is a mapping based on AMIs found publicly available as of 2016-03-14
+* `os`: The operating system for the deployed instance. Default: `ubuntu14`
+* `ami_user`: Mapping of `os` to a default user for the instance. Default: `ubuntu14 = "ubuntu"`
+* `ssl_certificate`: SSL Certificate information for chef-server-core installation
+  * `cert_file`: Full path to certificate file (usually `.crt` or `.pem` file)
+  * `key_file`: Full path to the certificate key file (usually `.key` file)
+* `elb`: AWS ELB settings
+  * `certificate`: The uploaded identifier for the SSL certificate to use with AWS ELB
+  * `hostname`: Basename for the hostname. Default: `chefelb`
+  * `tags_desc`: Default tag for ELB. Default: `Created using Terraform`
+* `chef`: Chef settings
+  * `accept_mlsa`: Indicate acceptance of the Chef MLSA. Must update to `true`. Default: `false`
+  * `client_version`: Chef client version to install. Default: `12.12.15`
+  * `backend_count`: Count of chef-backend instances to deploy. Default: `4`
+  * `backend_version`: Chef backend version to install. Default: `1.0.9`
+  * `frontend_count`: Chef server core instance count. Default: `4`
+  * `frontend_version`: Chef server core version to install. Default: `12.8.0`
+  * `org`: Chef organization to create. Default: `chef`
+  * `org_long`: Chef long organization name. Default: `Chef Organization`
+  * `username`: Chef username to create. Default: `chef`
+  * `user_email`: Chef user e-mail address. Default: `chef@domain.tld`
+  * `user_firstname`: Chef user first name. Default: `Chef`
+  * `user_lastname`: Chef user last name. Default: `User`
+* `instance`: Map of various AWS instance settings (backend and frontend)
+  * `backend_flavor`: Backend default instance type. Default: `r3.xlarge`
+  * `backend_iops`: Backend root volume IOPs (when using `io1`). Default: `6000`
+  * `backend_public`: Backend default association to public ip. Default: `true`
+  * `backend_size`: Backend root volume size in gigabytes. Default: `200`
+  * `backend_term`: Delete root volume on VM termination. Default: `true`
+  * `backend_type`: Backend root volume type: Default `io1`
+  * `ebs_optimized`: Deploy EBS optimized root volume. Default `true`
+  * `frontend_flavor`: Frontend default instance type. Default: `r3.xlarge`
+  * `frontend_iops`: Frontend root volume IOPs (when using `io1`). Default: `6000`
+  * `frontend_public`: Frontend default association to public ip. Default: `true`
+  * `frontend_size`: Frontend root volume size in gigabytes. Default: `200`
+  * `frontend_term`: Delete root volume on VM termination. Default: `true`
+  * `frontend_type`: Frontend root volume type: Default `io1`
+  * `tags_desc` = "Created using Terraform"
+* `instance_hostname`: Map of frontend and backend base hostnames
+  * `backend`: Chef backend base hostname. Default: `chefbe`
+  * `frontend`: Chef server core base hostname. Default: `chefbe`
+* `instance_keys`: Map of SSH key settings to deploy and access AWS instances
+  * `key_name`: The private key pair name on AWS to use (String)
+  * `key_file`: The full path to the private kye matching `instance_keys["key_name"]` public key on AWS
+* `domain`: Domain name for instances and ELB. Default: `localdomain`
+* `r53_zones`: AWS Route53 zone settings
   * `internal`: Route53 internal zone ID
   * `external`: Route53 external zone ID
-* `aws_elb_certificate`: AWS identifier for uploaded SSL certificate to use with AWS ELB
-* `aws_flavor`: The AWS instance type. Default: `c3.xlarge`
-* `aws_key_name`: The private key pair name on AWS to use (String)
-* `aws_private_key_file`: The full path to the private kye matching `aws_key_name` public key on AWS
+* `r53_ttls`: AWS Route53 TTL default settings
+  * `internal`: Time to live setting for internal zone route53 records. Default: `180`
+  * `external`: Time to live setting for external zone route53 records. Default: `180`
 
 
-### tf_hachef specific variables
-
-* `accept_license`: [Chef MLSA license](https://www.chef.io/online-master-agreement/) agreement. Default: `false`; change to `true` to indicate agreement
-* `allowed_cidrs`: The comma seperated list of addresses in CIDR format to allow SSH access. Default: `0.0.0.0/0`
-* `be_hostname`: Base hostname to generate backend hostnames. Default: `localhostbe`
-* `chef_clientv`: Chef client version. Default: `12.12.15`
-* `chef_serverv`: Chef Server version to install. Default `12.8.0`
-* `chef_orgl`: Chef organization long name. Default: `Chef Organization`
-* `chef_orgs`: Chef organization to create. Default: `chef`
-* `chef_usre`: Chef Server user's e-mail address. Default: `chef@domain.tld`
-* `chef_usrf`: Chef Server user's first name. Default: `Chef`
-* `chef_usrl`: Chef Server user's last name. Default: `User`
-* `chef_usrn`: First Chef Server user. Default: `chef`
-* `domain`: Server's basename. Default: `localhost`
-* `fe_hostname`: Base hostname to generate frontend hostnames. Default: `localhostfe`
-* `hostname`: Chef server's API hostname. Default: `localhost`
-* `log_to_file`: Log chef-client to file. Default: `true`
-* `public_ip`: Associate public IP to instance. Default `true`
-* `root_delete_termination`: Delete root device on VM termination. Default: `true`
-* `root_volume_size`: Size of the root volume in GB. Default: `20`
-* `root_volume_type`: Type of root volume. Supports `gp2` and `standard`. Default: `standard`
-* `route53_ttl`: Default Route53 record TTL. Default: `180`
-* `ssl_cert`: SSL certificate in PEM format
-* `ssl_key`: SSL certificate key
-* `tag_description`: AWS instance Name tag. Default `Created using Terraform`
-
-
-### Map variables
+### AMI map and customizing
 
 The below mapping variables construct selection criteria
 
-* `ami_map`: AMI selection map comprised of `ami_os` and `aws_region`
-* `ami_usermap`: Default username selection map based off `ami_os`
+* `ami`: AMI selection map comprised of `os`, `instance["(frontend|backend)_type"]` and `aws_region`
+* `ami_user`: Default username selection map based off `ami_os`
 
-The `ami_map` is a combination of `ami_os` and `aws_region` which declares the
-AMI selected. To override this pre-declared AMI, define
+To override this, construct the maps in the following manner:
 
 ```
-ami_map.<ami_os>-<aws_region> = "value"
+ami = {
+  myos-io1-us-west-1 = "ami-________"
+}
+os = "myos"
+ami_user = {
+  myos = "myloginuser"
+}
+
+instance = {
+  ...
+  backend_type = "io1"
+  ...
+}
 ```
 
-Variable `ami_os` should be one of the following:
+Defaults for `os` map:
 
 * centos6
 * centos7
@@ -160,7 +188,7 @@ Variable `ami_os` should be one of the following:
 * ubuntu14 (default)
 * ubuntu16
 
-Variable `aws_region` should be one of the following:
+Default region in `provider["region"]` should likely be one of the following:
 
 * us-east-1 (default)
 * us-west-2
@@ -174,17 +202,13 @@ Variable `aws_region` should be one of the following:
 * sa-east-1
 * Custom (must be an AWS region, requires setting `ami_map` and setting AMI value)
 
-Map `ami_usermap` uses `ami_os` to look the default username for interracting
-with the instance. To override this pre-declared user, define
-
-```
-ami_usermap.<ami_os> = "value"
-```
-
 
 ## Outputs
 
-* `credentials`: Formatted text output with details about the Chef Server
+* `chef_manage_url`: URL of the chef server's management interface
+* `chef_username`: Username for the chef user created
+* `chef_user_password`: Password for the chef user created
+* `knife_rb`: Path to the knife.rb file
 
 
 ## Contributors

@@ -1,234 +1,304 @@
 #
 # AWS provider specific configs
 #
-variable "aws_settings" {
-  description = "Map of AWS settings"
-  default     = {
-    access_key = ""
-    secret_key = ""
-    region     = "us-east-1"
+variable "provider" {
+  description       = "Map of AWS provider settings"
+  default           = {
+    access_key      = ""
+    region          = "us-east-1"
+    secret_key      = ""
   }
 }
 #
 # AWS VPC settings
 #
-variable "aws_vpc" {
-  description = "Map of AWS VPC settings"
-  default     = {
-    cidr_block           = "10.20.30.0/24"
-    instance_tenancy     = "default"
-    enable_dns_support   = true
-    enable_dns_hostnames = true
-    tags_name            = "Chef HA VPC"
+variable "vpc" {
+  type              = "map"
+  description       = "Map of AWS VPC settings"
+  default           = {
+    cidr            = "10.20.30.0/24"
+    dns_hostnames   = true
+    dns_support     = true
+    tags_desc       = "Chef HA VPC"
+    tenancy         = "default"
   }
 }
 #
-# AWS Subnet settings
+# AWS gateway settings
 #
-variable "aws_subnets" {
-  description = "Map of AWS availability zones (key) to subnet CIDR (value) assignments"
-  default     = {
-    us-east-1a = "10.20.30.0/26"
-    us-east-1c = "10.20.30.64/26"
-    us-east-1d = "10.20.30.128/26"
-    us-east-1e = "10.20.30.192/26"
+variable "gateway" {
+  type              = "string"
+  default           = "Chef HA GW"
+}
+#
+# AWS subnet settings
+#
+variable "subnets" {
+  type              = "map"
+  description       = "Map of AWS availability zones (key) to subnet CIDR (value) assignments"
+  default           = {
+    us-east-1a      = "10.20.30.0/26"
+    us-east-1c      = "10.20.30.64/26"
+    us-east-1d      = "10.20.30.128/26"
   }
 }
-variable "aws_subnet_map" {
-  description = "Map of AWS availability zones (key) to boolean map_public_ip_on_launch (value) assignments"
-  default = {
-    us-east-1a = true
-    us-east-1c = true
-    us-east-1d = true
-    us-east-1e = true
-  }
-}
-#
-# AWS Route53 Settings
-#
-variable "aws_route53" {
-  description = "Map of AWS Route53 Zone IDs"
-  default     = {
-    external  = ""
-    internal  = ""
-  }
-}
-variable "aws_elb_certificate" {
-  description = "Identifier for uploaded SSL certificate used with AWS ELB"
-}
-variable "aws_flavor" {
-  description = "AWS Instance type to deploy"
-  default     = "c3.xlarge"
-}
-variable "aws_key_name" {
-  description = "Name of the key pair uploaded to AWS"
-}
-variable "aws_private_key_file" {
-  description = "Full path to your local private key"
-}
-#
-# AMI mapping
-#
-variable "ami_map" {
-  description = "AMI map of OS/region (2016-03-14)"
-  default     = {
-    centos7-us-east-1       = "ami-6d1c2007"
-    centos7-us-west-2       = "ami-d2c924b2"
-    centos7-us-west-1       = "ami-af4333cf"
-    centos7-eu-central-1    = "ami-9bf712f4"
-    centos7-eu-west-1       = "ami-7abd0209"
-    centos7-ap-southeast-1  = "ami-f068a193"
-    centos7-ap-southeast-2  = "ami-fedafc9d"
-    centos7-ap-northeast-1  = "ami-eec1c380"
-    centos7-ap-northeast-2  = "ami-c74789a9"
-    centos7-sa-east-1       = "ami-26b93b4a"
-    centos6-us-east-1       = "ami-1c221e76"
-    centos6-us-west-2       = "ami-05cf2265"
-    centos6-us-west-1       = "ami-ac5f2fcc"
-    centos6-eu-central-1    = "ami-2bf11444"
-    centos6-eu-west-1       = "ami-edb9069e"
-    centos6-ap-southeast-1  = "ami-106aa373"
-    centos6-ap-southeast-2  = "ami-87d2f4e4"
-    centos6-ap-northeast-1  = "ami-fa3d3f94"
-    centos6-ap-northeast-2  = "ami-56478938"
-    centos6-sa-east-1       = "ami-03b93b6f"
-    ubuntu16-us-east-1      = "-1"
-    ubuntu16-us-west-2      = "-1"
-    ubuntu16-us-west-1      = "-1"
-    ubuntu16-eu-central-1   = "-1"
-    ubuntu16-eu-west-1      = "-1"
-    ubuntu16-ap-southeast-1 = "-1"
-    ubuntu16-ap-southeast-2 = "-1"
-    ubuntu16-ap-northeast-1 = "-1"
-    ubuntu16-ap-northeast-2 = "-1"
-    ubuntu16-sa-east-1      = "-1"
-    ubuntu14-us-east-1      = "ami-415f6d2b"
-    ubuntu14-us-west-2      = "ami-3d2cce5d"
-    ubuntu14-us-west-1      = "ami-1d25557d"
-    ubuntu14-eu-central-1   = "ami-9b9c86f7"
-    ubuntu14-eu-west-1      = "ami-abc579d8"
-    ubuntu14-ap-southeast-1 = "ami-f500c996"
-    ubuntu14-ap-southeast-2 = "ami-1f30167c"
-    ubuntu14-ap-northeast-1 = "ami-88686be6"
-    ubuntu14-ap-northeast-2 = "-1"
-    ubuntu14-sa-east-1      = "ami-f3e4669f"
-    ubuntu12-us-east-1      = "ami-88dfdee2"
-    ubuntu12-us-west-2      = "ami-1a977e7a"
-    ubuntu12-us-west-1      = "ami-4f285a2f"
-    ubuntu12-eu-central-1   = "ami-3cf61153"
-    ubuntu12-eu-west-1      = "ami-65932916"
-    ubuntu12-ap-southeast-1 = "ami-26e32845"
-    ubuntu12-ap-southeast-2 = "ami-d54e6eb6"
-    ubuntu12-ap-northeast-1 = "ami-f2afa79c"
-    ubuntu12-ap-northeast-2 = "-1"
-    ubuntu12-sa-east-1      = "ami-2661ec4a"
-  }
-}
-variable "ami_os" {
-  description = "Chef server OS (options: centos7, centos6, ubuntu16, [ubuntu14])"
-  default     = "ubuntu14"
-}
-variable "ami_usermap" {
-  description = "Default username map for AMI selected"
-  default     = {
-    centos7   = "centos"
-    centos6   = "centos"
-    ubuntu16  = "ubuntu"
-    ubuntu14  = "ubuntu"
-    ubuntu12  = "ubuntu"
+variable "subnets_public" {
+  type              = "map"
+  description       = "Map of AWS availability zones (key) to boolean map_public_ip_on_launch (value) assignments"
+  default           = {
+    us-east-1c      = true
+    us-east-1a      = true
+    us-east-1d      = true
   }
 }
 #
-# specific configs
-#
-variable "accept_license" {
-  description = "Acceptance of the Chef MLSA: https://www.chef.io/online-master-agreement/"
-  default     = false
-}
-variable "allowed_cidrs" {
+# AWS security group settings
+# CIDRs to allow SSH connections
+variable "ssh_cidrs" {
+  type        = "list"
   description = "List of CIDRs to allow SSH from (CSV list allowed)"
-  default     = "0.0.0.0/0"
-}
-variable "be_hostname" {
-  description = "Chef backend hostname"
-  default     = "localhostbe"
+  default     = ["0.0.0.0/0"]
 }
 #
-variable "chef_clientv" {
-  description = "Version of chef-client to install"
-  default     = "12.12.15"
+# AWS AMI settings map
+#
+variable "ami" {
+  type              = "map"
+  description       = "AMI map of OS/region (2016-03-14)"
+  default           = {
+    centos6-gp2-us-gov-west-1   = ""
+    centos6-gp2-us-east-1       = "ami-1c221e76"
+    centos6-gp2-us-west-2       = "ami-05cf2265"
+    centos6-gp2-us-west-1       = "ami-ac5f2fcc"
+    centos6-gp2-eu-central-1    = "ami-2bf11444"
+    centos6-gp2-eu-west-1       = "ami-edb9069e"
+    centos6-gp2-cn-north-1      = ""
+    centos6-gp2-ap-south-1      = "ami-9b1c76f4"
+    centos6-gp2-ap-southeast-1  = "ami-106aa373"
+    centos6-gp2-ap-southeast-2  = "ami-87d2f4e4"
+    centos6-gp2-ap-northeast-1  = "ami-fa3d3f94"
+    centos6-gp2-ap-northeast-2  = "ami-56478938"
+    centos6-gp2-sa-east-1       = "ami-03b93b6f"
+
+    centos7-gp2-us-gov-west-1   = ""
+    centos7-gp2-us-east-1       = "ami-6d1c2007"
+    centos7-gp2-us-west-2       = "ami-d2c924b2"
+    centos7-gp2-us-west-1       = "ami-af4333cf"
+    centos7-gp2-eu-central-1    = "ami-9bf712f4"
+    centos7-gp2-eu-west-1       = "ami-7abd0209"
+    centos7-gp2-cn-north-1      = ""
+    centos7-gp2-ap-south-1      = "ami-95cda6fa"
+    centos7-gp2-ap-southeast-1  = "ami-f068a193"
+    centos7-gp2-ap-southeast-2  = "ami-fedafc9d"
+    centos7-gp2-ap-northeast-1  = "ami-eec1c380"
+    centos7-gp2-ap-northeast-2  = "ami-c74789a9"
+    centos7-gp2-sa-east-1       = "ami-26b93b4a"
+
+    rhel7-gp2-us-gov-west-1     = ""
+    rhel7-gp2-us-east-1         = "ami-85241def"
+    rhel7-gp2-us-west-2         = "ami-a3fa16c3"
+    rhel7-gp2-us-west-1         = "ami-f7eb9b97"
+    rhel7-gp2-eu-central-1      = "ami-b6688dd9"
+    rhel7-gp2-eu-west-1         = "ami-ce66d8bd"
+    rhel7-gp2-cn-north-1        = ""
+    rhel7-gp2-ap-south-1        = "ami-cdbdd7a2"
+    rhel7-gp2-ap-southeast-1    = "ami-dccc04bf"
+    rhel7-gp2-ap-southeast-2    = "ami-286e4f4b"
+    rhel7-gp2-ap-northeast-1    = "ami-a05854ce"
+    rhel7-gp2-ap-northeast-2    = "ami-d35d93bd"
+    rhel7-gp2-sa-east-1         = "ami-2b068447"
+
+    rhel6-gp2-us-gov-west-1     = ""
+    rhel6-gp2-us-east-1         = "ami-ef14f582"
+    rhel6-gp2-us-west-2         = "ami-6fb7450f"
+    rhel6-gp2-us-west-1         = "ami-4b2b522b"
+    rhel6-gp2-eu-central-1      = "ami-e017f58f"
+    rhel6-gp2-eu-west-1         = "ami-f990188a"
+    rhel6-gp2-cn-north-1        = ""
+    rhel6-gp2-ap-south-1        = "ami-cbb0daa4"
+    rhel6-gp2-ap-southeast-1    = "ami-0903d46a"
+    rhel6-gp2-ap-southeast-2    = "ami-73507c10"
+    rhel6-gp2-ap-northeast-1    = "ami-beccd6d0"
+    rhel6-gp2-ap-northeast-2    = "ami-0d4d8563"
+    rhel6-gp2-sa-east-1         = "ami-074ec76b"
+
+    ubuntu14-gp2-us-gov-west-1  = "ami-6770ce06"
+    ubuntu14-gp2-us-east-1      = "ami-3bdd502c"
+    ubuntu14-gp2-us-west-2      = "ami-d732f0b7"
+    ubuntu14-gp2-us-west-1      = "ami-48db9d28"
+    ubuntu14-gp2-eu-central-1   = "ami-26c43149"
+    ubuntu14-gp2-eu-west-1      = "ami-ed82e39e"
+    ubuntu14-gp2-cn-north-1     = "ami-bead78d3"
+    ubuntu14-gp2-ap-south-1     = ""
+    ubuntu14-gp2-ap-southeast-1 = "ami-21d30f42"
+    ubuntu14-gp2-ap-southeast-2 = "ami-ba3e14d9"
+    ubuntu14-gp2-ap-northeast-1 = "ami-63b44a02"
+    ubuntu14-gp2-ap-northeast-2 = ""
+    ubuntu14-gp2-sa-east-1      = "ami-dc48dcb0"
+
+    ubuntu14-io1-us-gov-west-1  = "ami-1770ce76"
+    ubuntu14-io1-us-east-1      = "ami-aac24fbd"
+    ubuntu14-io1-us-west-2      = "ami-b828ead8"
+    ubuntu14-io1-us-west-1      = "ami-03dd9b63"
+    ubuntu14-io1-eu-central-1   = "ami-d0c431bf"
+    ubuntu14-io1-eu-west-1      = "ami-81bcddf2"
+    ubuntu14-io1-cn-north-1     = "ami-bfad78d2"
+    ubuntu14-io1-ap-south-1     = ""
+    ubuntu14-io1-ap-southeast-1 = "ami-9fd30ffc"
+    ubuntu14-io1-ap-southeast-2 = "ami-66391305"
+    ubuntu14-io1-ap-northeast-1 = "ami-b7b947d6"
+    ubuntu14-io1-ap-northeast-2 = ""
+    ubuntu14-io1-sa-east-1      = "ami-bb49ddd7"
+
+    ubuntu12-gp2-us-gov-west-1  = "ami-1daf117c"
+    ubuntu12-gp2-us-east-1      = "ami-b74688da"
+    ubuntu12-gp2-us-west-2      = "ami-312ee851"
+    ubuntu12-gp2-us-west-1      = "ami-951651f5"
+    ubuntu12-gp2-eu-central-1   = "ami-13db307c"
+    ubuntu12-gp2-eu-west-1      = "ami-0fe57f7c"
+    ubuntu12-gp2-cn-north-1     = "ami-109d487d"
+    ubuntu12-gp2-ap-south-1     = "ami-4c9cf623"
+    ubuntu12-gp2-ap-southeast-1 = "ami-ba22f0d9"
+    ubuntu12-gp2-ap-southeast-2 = "ami-c29db5a1"
+    ubuntu12-gp2-ap-northeast-1 = "ami-1505f474"
+    ubuntu12-gp2-ap-northeast-2 = ""
+    ubuntu12-gp2-sa-east-1      = "ami-36a83d5a"
+
+    ubuntu12-io1-us-gov-west-1  = "ami-43af1122"
+    ubuntu12-io1-us-east-1      = "ami-e9468884"
+    ubuntu12-io1-us-west-2      = "ami-6028ee00"
+    ubuntu12-io1-us-west-1      = "ami-30084f50"
+    ubuntu12-io1-eu-central-1   = "ami-a1c42fce"
+    ubuntu12-io1-eu-west-1      = "ami-23e47e50"
+    ubuntu12-io1-cn-north-1     = "ami-ec75bf81"
+    ubuntu12-io1-ap-south-1     = "ami-c79df7a8"
+    ubuntu12-io1-ap-southeast-1 = "ami-2720f244"
+    ubuntu12-io1-ap-southeast-2 = "ami-c59db5a6"
+    ubuntu12-io1-ap-northeast-1 = "ami-1002f371"
+    ubuntu12-io1-ap-northeast-2 = ""
+    ubuntu12-io1-sa-east-1      = "ami-afab3ec3"
+  }
 }
-variable "chef_serverv" {
-  description = "Version of chef-server-core to install"
-  default     = "12.8.0"
+variable "os" {
+  type               = "string"
+  description        = "Chef server OS (options: centos7, centos6, ubuntu16, [ubuntu14])"
+  default            = "ubuntu14"
 }
-variable "chef_orgl" {
-  description = "Chef server organization name (long form)"
-  default     = "Chef Organization"
+variable "ami_user" {
+  type               = "map"
+  description        = "Default username map for AMI selected"
+  default            = {
+    centos7          = "centos"
+    centos6          = "centos"
+    ubuntu16         = "ubuntu"
+    ubuntu14         = "ubuntu"
+    ubuntu12         = "ubuntu"
+  }
 }
-variable "chef_orgs" {
-  description = "Chef server organization name (short form)"
-  default     = "chef"
+#
+# SSL settings
+#
+variable "ssl_certificate" {
+  type               = "map"
+  description        = "SSL Certificate information"
+  default            = {
+    cert_file        = ""
+    key_file         = ""
+  }
 }
-variable "chef_usre" {
-  description = "Chef user's e-mail"
-  default     = "chef@domain.tld"
+#
+# AWS ELB settings
+#
+variable "elb" {
+  type              = "map"
+  description       = ""
+  default           = {
+    certificate     = ""
+    hostname        = "elb"
+    tags_desc       = "Created using Terraform"
+  }
 }
-variable "chef_usrf" {
-  description = "Chef user's first name"
-  default     = "Chef"
+#
+# Chef settings
+#
+variable "chef" {
+  type               = "map"
+  description        = "Various Chef related settings"
+  default            = {
+    accept_mlsa      = false
+    client_version   = "12.12.15"
+    backend_count    = 4
+    backend_version  = "1.0.9"
+    frontend_count   = 4
+    frontend_version = "12.8.0"
+    org              = "chef"
+    org_long         = "Chef Organization"
+    username         = "chef"
+    user_email       = "chef@domain.tld"
+    user_firstname   = "Chef"
+    user_lastname    = "User"
+  }
 }
-variable "chef_usrl" {
-  description = "Chef user's last name"
-  default     = "User"
+#
+# AWS EC2 instance settings
+#
+variable "instance" {
+  type              = "map"
+  description       = ""
+  default           = {
+    backend_flavor  = "r3.xlarge"
+    backend_iops    = 6000
+    backend_public  = true
+    backend_size    = 200
+    backend_term    = true
+    backend_type    = "io1"
+    ebs_optimized   = true
+    frontend_flavor = "m4.large"
+    frontend_iops   = 0
+    frontend_public = true
+    frontend_size   = 40
+    frontend_term   = true
+    frontend_type   = "gp2"
+    tags_desc       = "Created using Terraform"
+  }
 }
-variable "chef_usrn" {
-  description = "Chef server username"
-  default     = "chef"
+variable "instance_hostname" {
+  type              = "map"
+  description       = ""
+  default           = {
+    backend         = "chefbe"
+    frontend        = "cheffe"
+  }
+}
+variable "instance_keys" {
+  type              = "map"
+  description       = ""
+  default           = {
+    key_name        = ""
+    key_file        = ""
+  }
 }
 variable "domain" {
-  description = "Chef server domain name"
-  default     = "localdomain"
+  description        = "Chef server domain name"
+  default            = "localdomain"
 }
-variable "fe_hostname" {
-  description = "Chef frontend hostname"
-  default     = "localhostfe"
+#
+# AWS Route53 settings
+#
+variable "r53_zones" {
+  type              = "map"
+  description       = ""
+  default           = {
+    external        = ""
+    internal        = ""
+  }
 }
-variable "hostname" {
-  description = "Chef server hostname"
-  default     = "localhost"
+variable "r53_ttls" {
+  type              = "map"
+  description       = ""
+  default           = {
+    external        = "180"
+    internal        = "180"
+  }
 }
-variable "log_to_file" {
-  description = "Output chef-client runtime to logfiles/"
-  default     = true
-}
-variable "public_ip" {
-  description = "Associate a public IP to the instance"
-  default     = true
-}
-variable "root_delete_termination" {
-  description = "Delete server root block device on termination"
-  default     = true
-}
-variable "root_volume_size" {
-  description = "Size in GB of root device"
-  default     = 20
-}
-variable "root_volume_type" {
-  description = "Type of root volume"
-  default     = "standard"
-}
-variable "route53_ttl" {
-  description = "Default TTL for Route53 records (180)"
-  default     = 180
-}
-variable "ssl_cert" {
-  description = "SSL Certificate in PEM format"
-}
-variable "ssl_key" {
-  description = "Key for SSL Certificate"
-}
-variable "tag_description" {
-  description = "Chef server AWS description tag text"
-  default     = "Created using Terraform"
-}
+
