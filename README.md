@@ -36,7 +36,9 @@ the requirements are extensive
     * 9200/tcp: Elasticsearch from Frontend SG
   * SSH Security Group:
     * 22/tcp: SSH from anywhere (default), restrict with `${ssh_cidrs}` list
-* Creates subnets spread across AWS AZs, minimum three (3) required
+* Creates subnets spread across AWS AZs
+* Minimum three (3) chef-backend instances required (`chef["backend_count"]`)
+* Minimum two (2) chef-server-core instances required (`chef["frontend_count"]`)
 * Understand Terraform and ability to read the source
 
 
