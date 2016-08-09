@@ -561,7 +561,7 @@ resource "aws_route53_record" "chef-ha-elb" {
   records = ["${aws_elb.chef-ha-frontend.dns_name}"]
 }
 # knife.rb templating
-resource "template_file" "knife-rb" {
+data "template_file" "knife-rb" {
   depends_on = ["null_resource.chef-prep"]
   template = "${file("${path.module}/files/knife-rb.tpl")}"
   vars {
@@ -647,7 +647,7 @@ resource "null_resource" "knife-rb" {
     command = <<-EOC
       [ -f .chef/knife.rb ] && rm -rf .chef/knife.rb || echo OK
       tee .chef/knife.rb <<EOF
-      ${template_file.knife-rb.rendered}
+      ${data.template_file.knife-rb.rendered}
       EOF
       EOC
   }
