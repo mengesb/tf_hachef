@@ -3,6 +3,10 @@ tf_hachef CHANGELOG
 
 This file is used to list changes made in each version of the tf_hachef Terraform plan.
 
+v0.2.4 (2016-08-10)
+-------------------
+- Fix for #14
+
 v0.2.3 (2016-08-10)
 -------------------
 - Breakup `chef` map into `chef_backend`, `chef_client`, `chef_mlsa`,

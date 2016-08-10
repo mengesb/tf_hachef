@@ -226,7 +226,7 @@ variable "chef_backend" {
   description        = "Chef backend settings"
   default            = {
     count            = 4
-    version          = "1.1.12"
+    version          = "1.1.2"
   }
 }
 variable "chef_server" {

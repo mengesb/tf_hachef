@@ -116,7 +116,7 @@ to delete the resources.
   * `tags_desc`: Default tag for ELB. Default: `Created using Terraform`
 * `chef_backend`: Chef backend settings
   * `count`: Count of chef-backend instances to deploy. Default: `4`
-  * `version`: Chef backend version to install. Default: `1.0.9`
+  * `version`: Chef backend version to install. Default: `1.1.2`
 * `chef_client`: Chef client version to install. Default: `12.12.15`
 * `chef_mlsa`: Indicate acceptance of the Chef MLSA. Must update to `true`. Default: `false`
 * `chef_org`: Chef organization settings
