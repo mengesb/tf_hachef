@@ -214,10 +214,10 @@ resource "null_resource" "chef-prep" {
       EOF
   }
 }
-# Chef provisiong attributes_json and dna.json templating
-resource "template_file" "be-attributes-json" {
+# Chef provisiong backend attributes_json and dna.json templating
+resource "template_file" "backend-attributes-json" {
   count     = "${var.chef_backend["count"]}"
-  template  = "${file("${path.module}/files/attributes-json.tpl")}"
+  template  = "${file("${path.module}/files/backend-attributes-json.tpl")}"
   vars {
     domain  = "${var.domain}"
     host    = "${format("%s-%03d", var.instance_hostname["backend"], count.index + 1)}"
@@ -262,7 +262,7 @@ resource "aws_instance" "chef-backends" {
   provisioner "remote-exec" {
     inline = [
       "cat > /tmp/dna.json <<EOF",
-      "${element(template_file.be-attributes-json.*.rendered, count.index)}",
+      "${element(template_file.backend-attributes-json.*.rendered, count.index)}",
       "EOF",
     ]
   }
@@ -334,12 +334,9 @@ resource "null_resource" "follow_leader" {
   # Join cluster
   provisioner "remote-exec" {
     inline = [
+      "echo 'postgresql.md5_auth_cidr_addresses = [\"samehost\",\"samenet\",\"${var.vpc["cidr"]}\"]'|sudo tee -a /etc/chef-backend/chef-backend.rb",
       "sudo chef-backend-ctl join-cluster ${aws_instance.chef-backends.0.private_ip} --accept-license --quiet -s /tmp/chef-backend-secrets.json -y",
       "[ $? -eq 0 ] && rm -rf /tmp/chef-backend-secrets.json",
-      "sudo chef-backend-ctl cluster-status",
-      "echo 'postgresql.md5_auth_cidr_addresses = [\"samehost\",\"samenet\",\"${var.vpc["cidr"]}\"]'|sudo tee -a /etc/chef-backend/chef-backend.rb",
-      "sudo chef-backend-ctl restart",
-      "sudo chef-backend-ctl reconfigure",
     ]
   }
   # Release cluster joining lock
@@ -365,7 +362,7 @@ resource "aws_route53_record" "chef-backends-public" {
 }
 #
 # Frontend: chef-server-core
-# Chef provisiong attributes_json and dna.json templating
+# Chef provisiong frontend attributes_json and dna.json templating
 resource "template_file" "frontend-attributes-json" {
   count      = "${var.chef_server["count"]}"
   template   = "${file("${path.module}/files/frontend-attributes-json.tpl")}"
