@@ -3,7 +3,7 @@
 #
 resource "null_resource" "chef_mlsa" {
   provisioner "local-exec" {
-    command = "bash ${path.module}/files/chef_mlsa.bash ${var.chef["accept_mlsa"]}"
+    command = "bash ${path.module}/files/chef_mlsa.bash ${var.chef_mlsa}"
   }
 }
 #
@@ -216,7 +216,7 @@ resource "null_resource" "chef-prep" {
 }
 # Chef provisiong attributes_json and dna.json templating
 resource "template_file" "be-attributes-json" {
-  count     = "${var.chef["backend_count"]}"
+  count     = "${var.chef_backend["count"]}"
   template  = "${file("${path.module}/files/attributes-json.tpl")}"
   vars {
     domain  = "${var.domain}"
@@ -227,7 +227,7 @@ resource "template_file" "be-attributes-json" {
 # Provision servers
 # Backend: chef-backend
 resource "aws_instance" "chef-backends" {
-  count         = "${var.chef["backend_count"]}"
+  count         = "${var.chef_backend["count"]}"
   ami           = "${lookup(var.ami, "${var.os}-${var.instance["backend_type"]}-${var.provider["region"]}")}"
   ebs_optimized = "${var.instance["ebs_optimized"]}"
   instance_type = "${var.instance["backend_flavor"]}"
@@ -269,8 +269,8 @@ resource "aws_instance" "chef-backends" {
   # Install requirements and run chef-solo
   provisioner "remote-exec" {
     inline = [
-      "curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v ${var.chef["client_version"]}",
-      "curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P chef-backend -d /tmp -v ${var.chef["backend_version"]}",
+      "curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v ${var.chef_client}",
+      "curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P chef-backend -d /tmp -v ${var.chef_backend["version"]}",
       "sudo chef-solo -j /tmp/dna.json -N ${self.tags.Name} -o 'recipe[system::default]'",
       "rm -rf /tmp/dna.json",
     ]
@@ -316,7 +316,7 @@ resource "null_resource" "establish_leader" {
 }
 # Establish chef-backend cluster followers
 resource "null_resource" "follow_leader" {
-  count         = "${var.chef["backend_count"] - 1}"
+  count         = "${var.chef_backend["count"] - 1}"
   depends_on    = ["null_resource.establish_leader"]
   connection {
     host        = "${element(aws_instance.chef-backends.*.public_ip, count.index + 1)}"
@@ -348,7 +348,7 @@ resource "null_resource" "follow_leader" {
   }
 }
 resource "aws_route53_record" "chef-backends-private" {
-  count   = "${var.chef["backend_count"]}"
+  count   = "${var.chef_backend["count"]}"
   zone_id = "${var.r53_zones["internal"]}"
   name    = "${element(aws_instance.chef-backends.*.tags.Name, count.index)}"
   type    = "A"
@@ -356,7 +356,7 @@ resource "aws_route53_record" "chef-backends-private" {
   records = ["${element(aws_instance.chef-backends.*.private_ip, count.index)}"]
 }
 resource "aws_route53_record" "chef-backends-public" {
-  count   = "${var.chef["backend_count"]}"
+  count   = "${var.chef_backend["count"]}"
   zone_id = "${var.r53_zones["external"]}"
   name    = "${element(aws_instance.chef-backends.*.tags.Name, count.index)}"
   type    = "A"
@@ -367,7 +367,7 @@ resource "aws_route53_record" "chef-backends-public" {
 # Frontend: chef-server-core
 # Chef provisiong attributes_json and dna.json templating
 resource "template_file" "frontend-attributes-json" {
-  count      = "${var.chef["frontend_count"]}"
+  count      = "${var.chef_server["count"]}"
   template   = "${file("${path.module}/files/frontend-attributes-json.tpl")}"
   vars {
     domain   = "${var.domain}"
@@ -375,7 +375,7 @@ resource "template_file" "frontend-attributes-json" {
   }
 }
 resource "aws_instance" "chef-frontends" {
-  count         = "${var.chef["frontend_count"]}"
+  count         = "${var.chef_server["count"]}"
   ami           = "${lookup(var.ami, "${var.os}-${var.instance["frontend_type"]}-${var.provider["region"]}")}"
   ebs_optimized = "${var.instance["ebs_optimized"]}"
   instance_type = "${var.instance["frontend_flavor"]}"
@@ -428,15 +428,15 @@ resource "aws_instance" "chef-frontends" {
     inline = [
       "sudo mkdir -p /etc/opscode /var/opt/opscode/nginx/ca/ /var/opt/chef-manage",
       "sudo touch /var/opt/chef-manage/.license.accepted",
-      "curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v ${var.chef["client_version"]}",
-      "curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P chef-server -d /tmp -v ${var.chef["frontend_version"]}",
+      "curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v ${var.chef_client}",
+      "curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P chef-server -d /tmp -v ${var.chef_server["version"]}",
       "sudo chef-solo -j /tmp/dna.json -N ${self.tags.Name} -o 'recipe[system::default]'",
       "[ $? -eq 0 ] && rm -f /tmp/dna.json",
     ]
   }
 }
 resource "aws_route53_record" "chef-frontend-private" {
-  count   = "${var.chef["frontend_count"]}"
+  count   = "${var.chef_server["count"]}"
   zone_id = "${var.r53_zones["internal"]}"
   name    = "${element(aws_instance.chef-frontends.*.tags.Name, count.index)}"
   type    = "A"
@@ -444,7 +444,7 @@ resource "aws_route53_record" "chef-frontend-private" {
   records = ["${element(aws_instance.chef-frontends.*.private_ip, count.index)}"]
 }
 resource "aws_route53_record" "chef-frontend-public" {
-  count   = "${var.chef["frontend_count"]}"
+  count   = "${var.chef_server["count"]}"
   zone_id = "${var.r53_zones["external"]}"
   name    = "${element(aws_instance.chef-frontends.*.tags.Name, count.index)}"
   type    = "A"
@@ -453,7 +453,7 @@ resource "aws_route53_record" "chef-frontend-public" {
 }
 resource "null_resource" "generate_frontend_cfg" {
   depends_on    = ["null_resource.follow_leader"]
-  count         = "${var.chef["frontend_count"]}"
+  count         = "${var.chef_server["count"]}"
   connection {
     host        = "${aws_instance.chef-backends.0.public_ip}"
     user        = "${var.ami_user[var.os]}"
@@ -522,7 +522,7 @@ resource "null_resource" "first_frontend" {
   }
 }
 resource "null_resource" "other_frontends" {
-  count         = "${var.chef["frontend_count"] - 1}"
+  count         = "${var.chef_server["count"] - 1}"
   depends_on    = ["null_resource.first_frontend"]
   connection {
     host        = "${element(aws_instance.chef-frontends.*.public_ip, count.index + 1)}"
@@ -565,9 +565,9 @@ data "template_file" "knife-rb" {
   depends_on = ["null_resource.chef-prep"]
   template = "${file("${path.module}/files/knife-rb.tpl")}"
   vars {
-    user   = "${var.chef["username"]}"
+    user   = "${var.chef_user["username"]}"
     fqdn   = "${var.elb["hostname"]}.${var.domain}"
-    org    = "${var.chef["org"]}"
+    org    = "${var.chef_org["short"]}"
   }
 }
 # Setting up Chef Server
@@ -581,17 +581,17 @@ resource "null_resource" "chef-setup" {
   # TODO: Maybe create parametertized script to run these commands (wrapping chef-server-ctl)
   provisioner "remote-exec" {
     inline = [
-      "sudo chef-server-ctl user-create ${var.chef["username"]} ${var.chef["user_firstname"]} ${var.chef["user_lastname"]} ${var.chef["user_email"]} ${base64sha256(aws_instance.chef-frontends.0.id)} -f /tmp/${var.chef["username"]}.pem",
-      "sudo chef-server-ctl org-create ${var.chef["org"]} '${var.chef["org_long"]}' --association_user ${var.chef["username"]} --filename /tmp/${var.chef["org"]}-validator.pem",
-      "sudo chown ${var.ami_user[var.os]} /tmp/${var.chef["username"]}.pem /tmp/${var.chef["org"]}-validator.pem",
+      "sudo chef-server-ctl user-create ${var.chef_user["username"]} ${var.chef_user["first_name"]} ${var.chef_user["last_name"]} ${var.chef_user["email"]} ${base64sha256(aws_instance.chef-frontends.0.id)} -f /tmp/${var.chef_user["username"]}.pem",
+      "sudo chef-server-ctl org-create ${var.chef_org["short"]} '${var.chef_org["long"]}' --association_user ${var.chef_user["username"]} --filename /tmp/${var.chef_org["short"]}-validator.pem",
+      "sudo chown ${var.ami_user[var.os]} /tmp/${var.chef_user["username"]}.pem /tmp/${var.chef_org["short"]}-validator.pem",
     ]
   }
   # Copy back files
   provisioner "local-exec" {
     command = <<-EOC
-      rm -f .chef/${var.chef["org"]}-validator.pem .chef/${var.chef["username"]}.pem
-      scp -r -o stricthostkeychecking=no -i ${var.instance_keys["key_file"]} ${var.ami_user[var.os]}@${aws_instance.chef-frontends.0.public_ip}:/tmp/${var.chef["org"]}-validator.pem .chef/${var.chef["org"]}-validator.pem
-      scp -r -o stricthostkeychecking=no -i ${var.instance_keys["key_file"]} ${var.ami_user[var.os]}@${aws_instance.chef-frontends.0.public_ip}:/tmp/${var.chef["username"]}.pem .chef/${var.chef["username"]}.pem
+      rm -f .chef/${var.chef_org["short"]}-validator.pem .chef/${var.chef_user["username"]}.pem
+      scp -r -o stricthostkeychecking=no -i ${var.instance_keys["key_file"]} ${var.ami_user[var.os]}@${aws_instance.chef-frontends.0.public_ip}:/tmp/${var.chef_org["short"]}-validator.pem .chef/${var.chef_org["short"]}-validator.pem
+      scp -r -o stricthostkeychecking=no -i ${var.instance_keys["key_file"]} ${var.ami_user[var.os]}@${aws_instance.chef-frontends.0.public_ip}:/tmp/${var.chef_user["username"]}.pem .chef/${var.chef_user["username"]}.pem
       EOC
   }
 }

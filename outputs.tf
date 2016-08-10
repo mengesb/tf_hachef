@@ -1,9 +1,9 @@
 # Outputs
 output "chef_manage_url" {
-  value = "https://${var.elb["hostname"]}.${var.domain}/organizations/${var.chef["org"]}"
+  value = "https://${var.elb["hostname"]}.${var.domain}/organizations/${var.chef_org["short"]}"
 }
 output "chef_username" {
-  value = "${var.chef["username"]}"
+  value = "${var.chef_user["username"]}"
 }
 output "chef_user_password" {
   sensitive = true
