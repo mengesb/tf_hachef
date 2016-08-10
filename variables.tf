@@ -221,23 +221,49 @@ variable "elb" {
 #
 # Chef settings
 #
-variable "chef" {
+variable "chef_backend" {
   type               = "map"
-  description        = "Various Chef related settings"
+  description        = "Chef backend settings"
   default            = {
-    accept_mlsa      = false
-    client_version   = "12.12.15"
-    backend_count    = 4
-    backend_version  = "1.0.9"
-    frontend_count   = 4
-    frontend_version = "12.8.0"
-    org              = "chef"
-    org_long         = "Chef Organization"
-    username         = "chef"
-    user_email       = "chef@domain.tld"
-    user_firstname   = "Chef"
-    user_lastname    = "User"
+    count            = 4
+    version          = "1.1.12"
   }
+}
+variable "chef_server" {
+  type               = "map"
+  description        = "Chef server core settings"
+  default            = {
+    count            = 4
+    version          = "12.8.0"
+  }
+}
+variable "chef_user" {
+  type               = "map"
+  description        = "Chef user creation settings"
+  default            = {
+    email            = "chef@domain.tld"
+    first_name       = "Chef"
+    last_name        = "User"
+    username         = "chef"
+  }
+}
+variable "chef_org" {
+  type               = "map"
+  description        = "Chef organization settings"
+  default            = {
+    short            = "chef"
+    long             = "Chef Organization"
+  }
+}
+variable "chef_client" {
+  type               = "string"
+  description        = "Chef client version"
+  default            = "12.12.15"
+}
+variable "chef_mlsa" {
+#  type               = "string"
+  description        = "Chef MLSA license agreement"
+  default            = false
 }
 #
 # AWS EC2 instance settings

@@ -114,19 +114,22 @@ to delete the resources.
   * `certificate`: The uploaded identifier for the SSL certificate to use with AWS ELB
   * `hostname`: Basename for the hostname. Default: `chefelb`
   * `tags_desc`: Default tag for ELB. Default: `Created using Terraform`
-* `chef`: Chef settings
-  * `accept_mlsa`: Indicate acceptance of the Chef MLSA. Must update to `true`. Default: `false`
-  * `client_version`: Chef client version to install. Default: `12.12.15`
-  * `backend_count`: Count of chef-backend instances to deploy. Default: `4`
-  * `backend_version`: Chef backend version to install. Default: `1.0.9`
-  * `frontend_count`: Chef server core instance count. Default: `4`
-  * `frontend_version`: Chef server core version to install. Default: `12.8.0`
-  * `org`: Chef organization to create. Default: `chef`
-  * `org_long`: Chef long organization name. Default: `Chef Organization`
+* `chef_backend`: Chef backend settings
+  * `count`: Count of chef-backend instances to deploy. Default: `4`
+  * `version`: Chef backend version to install. Default: `1.0.9`
+* `chef_client`: Chef client version to install. Default: `12.12.15`
+* `chef_mlsa`: Indicate acceptance of the Chef MLSA. Must update to `true`. Default: `false`
+* `chef_org`: Chef organization settings
+  * `short`: Chef organization to create. Default: `chef`
+  * `long`: Chef long organization name. Default: `Chef Organization`
+* `chef_server`: Chef server core settings
+  * `count`: Chef server core instance count. Default: `4`
+  * `version`: Chef server core version to install. Default: `12.8.0`
+* `chef_user`: Chef initial user settings
   * `username`: Chef username to create. Default: `chef`
-  * `user_email`: Chef user e-mail address. Default: `chef@domain.tld`
-  * `user_firstname`: Chef user first name. Default: `Chef`
-  * `user_lastname`: Chef user last name. Default: `User`
+  * `email`: Chef user e-mail address. Default: `chef@domain.tld`
+  * `first_name`: Chef user first name. Default: `Chef`
+  * `last_name`: Chef user last name. Default: `User`
 * `instance`: Map of various AWS instance settings (backend and frontend)
   * `backend_flavor`: Backend default instance type. Default: `r3.xlarge`
   * `backend_iops`: Backend root volume IOPs (when using `io1`). Default: `6000`

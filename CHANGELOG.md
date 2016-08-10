@@ -3,6 +3,12 @@ tf_hachef CHANGELOG
 
 This file is used to list changes made in each version of the tf_hachef Terraform plan.
 
+v0.2.3 (2016-08-10)
+-------------------
+- Breakup `chef` map into `chef_backend`, `chef_client`, `chef_mlsa`,
+`chef_org`, `chef_server`, and `chef_user` variables
+- Changes to supporting documentation
+
 v0.2.2 (2016-08-09)
 -------------------
 - Fix for #7
@@ -17,7 +23,8 @@ v0.2.0 (2016-08-08)
 -------------------
 - Overhaul on code (nearly complete re-write)
 - Updated syntax for (most) Terraform 0.7.0 constructs
-- NOTE: Leaving `template` in place of `data` source due to `count` absence on `data` source
+- NOTE: Leaving `template` in place of `data` source due to `count` absence on
+`data` source
 - Removed a number of files
 
 v0.1.1 (2016-07-15)

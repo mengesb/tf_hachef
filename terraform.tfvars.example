@@ -89,20 +89,26 @@ ssl_certificate    = {
 #
 # Chef settings
 #
-chef               = {
-  accept_mlsa      = false # UPDATE THIS!
-  client_version   = "12.12.15"
-  backend_count    = 4
-  backend_version  = "1.0.9"
-  frontend_count   = 4
-  frontend_version = "12.8.0"
-  org              = "chef"
-  org_long         = "Chef Organization"
-  username         = "chef"
-  user_firstname   = "Chef"
-  user_lastnname   = "User"
-  user_email       = "chef@domain.tld"
-}
+#chef_backend       = {
+#  count            = 4
+#  version          = "1.1.12"
+#}
+#chef_client        = "12.12.15"
+chef_mlsa          = "false" # Must update this to true!
+#chef_org           = {
+#  short            = "chef"
+#  long             = "Chef Organization"
+#}
+#chef_server        = {
+#  count            = 4
+#  version          = "12.8.0"
+#}
+#chef_user          = {
+#  username         = "chef"
+#  first_name       = "Chef"
+#  last_nname       = "User"
+#  email            = "chef@domain.tld"
+#}
 #
 # AWS Route53 settings
 #
