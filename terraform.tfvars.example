@@ -91,7 +91,7 @@ ssl_certificate    = {
 #
 #chef_backend       = {
 #  count            = 4
-#  version          = "1.1.12"
+#  version          = "1.1.2"
 #}
 #chef_client        = "12.12.15"
 chef_mlsa          = "false" # Must update this to true!
