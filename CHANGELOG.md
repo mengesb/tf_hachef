@@ -3,7 +3,7 @@ tf_hachef CHANGELOG
 
 This file is used to list changes made in each version of the tf_hachef Terraform plan.
 
-v0.2.1 (2016-08-09)
+v0.2.2 (2016-08-09)
 -------------------
 - Fix for #7
 - Fix for #8
