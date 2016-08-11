@@ -3,9 +3,17 @@ tf_hachef CHANGELOG
 
 This file is used to list changes made in each version of the tf_hachef Terraform plan.
 
+v0.2.6 (2016-08-11)
+-------------------
+- Updated root device to use gp2 on backends
+- Added map `instance_store` with reasonable defaults
+- Now using local node instance storage for backends
+- Large documentation overhaul
+
 v0.2.5 (2016-08-10)
 -------------------
-- Adding `postgresql.md5_auth_cidr_addresses` to `chef-backend.rb` before joining cluster no longer breaks chef-backend
+- Adding `postgresql.md5_auth_cidr_addresses` to `chef-backend.rb` before
+joining cluster no longer breaks chef-backend
 - attributes-json.tpl -> backend-attributes-json.tpl for consistency
 
 v0.2.4 (2016-08-10)

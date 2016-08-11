@@ -79,133 +79,656 @@ These resources will incur charges on your AWS bill. It is your responsibility
 to delete the resources.
 
 
+## Recommendations
+
+The defaults set forth in the [variables.tf](variables.tf) file have been set
+for good reasons. Please note that a good amount of testing went into defining
+these defaults and necessary inputs are defined, for your convenience in
+[terraform.tfvars.example](terraform.tfvars.example)
+
+
 ## Input variables
 
 
-* `provider`: AWS provider settings
-  * `access_key`: Your AWS key, usually referred to as `AWS_ACCESS_KEY_ID`
-  * `region`: AWS region you want to deploy to. Default: `us-east-1`
-  * `secret_key`: Your secret for your AWS key, usually referred to as `AWS_SECRET_ACCESS_KEY`
-* `vpc`: AWS VPC settings
-  * `cidr`: CIDR block for VPC creation. Default: `10.20.30.0/24`
-  * `dns_hostnames`: Support DNS hostnames (required). Default: `true`
-  * `dns_support`: Support DNS in VPC (required). Default: `true`
-  * `tags_desc`: AWS Name tag for VPC. Default: `Chef HA VPC`
-  * `tenancy`: AWS instance tenancy. Default: `default`
-* `subnets`: AWS subnet settings
-  * This map is a dynamic map. Please read below:
-  * `KEY`: You create the key labeled as the availability zone (i.e us-east-1a)
-  * Default keys: `us-east-1a`, `us-east-1c`, `us-east-1d`, `us-east-1e`
-  * `VALUE`: Value is the CIDR subnet to create in that availability zone
-  * Default values: `10.20.30.0/26`, `10.20.30.64/26`, `10.20.30.128/26`, `10.20.30.192/26`
-* `subnets_public`: Subnet map defaulting the public IP assignment in that availability zone's subnet
-  * `KEY`: Must have the same keys as `subnets`. Default: reference `subnets`
-  * `VALUE`: Can be `true` or `false`. Default: `true`
-* `ssh_cidrs`: List of CIDR ranges allowed SSH access. Default: `["0.0.0.0/0"]`
-* `ami`: AMI map for selecting the AMI
-  * The `KEY` is comprised of the `os`-`instance["(frontend|backend)_type"]`-`provider["region"]`
-  * The `value` is a mapping based on AMIs found publicly available as of 2016-03-14
-* `os`: The operating system for the deployed instance. Default: `ubuntu14`
-* `ami_user`: Mapping of `os` to a default user for the instance. Default: `ubuntu14 = "ubuntu"`
-* `ssl_certificate`: SSL Certificate information for chef-server-core installation
-  * `cert_file`: Full path to certificate file (usually `.crt` or `.pem` file)
-  * `key_file`: Full path to the certificate key file (usually `.key` file)
-* `elb`: AWS ELB settings
-  * `certificate`: The uploaded identifier for the SSL certificate to use with AWS ELB
-  * `hostname`: Basename for the hostname. Default: `chefelb`
-  * `tags_desc`: Default tag for ELB. Default: `Created using Terraform`
-* `chef_backend`: Chef backend settings
-  * `count`: Count of chef-backend instances to deploy. Default: `4`
-  * `version`: Chef backend version to install. Default: `1.1.2`
-* `chef_client`: Chef client version to install. Default: `12.12.15`
-* `chef_mlsa`: Indicate acceptance of the Chef MLSA. Must update to `true`. Default: `false`
-* `chef_org`: Chef organization settings
-  * `short`: Chef organization to create. Default: `chef`
-  * `long`: Chef long organization name. Default: `Chef Organization`
-* `chef_server`: Chef server core settings
-  * `count`: Chef server core instance count. Default: `4`
-  * `version`: Chef server core version to install. Default: `12.8.0`
-* `chef_user`: Chef initial user settings
-  * `username`: Chef username to create. Default: `chef`
-  * `email`: Chef user e-mail address. Default: `chef@domain.tld`
-  * `first_name`: Chef user first name. Default: `Chef`
-  * `last_name`: Chef user last name. Default: `User`
-* `instance`: Map of various AWS instance settings (backend and frontend)
-  * `backend_flavor`: Backend default instance type. Default: `r3.xlarge`
-  * `backend_iops`: Backend root volume IOPs (when using `io1`). Default: `6000`
-  * `backend_public`: Backend default association to public ip. Default: `true`
-  * `backend_size`: Backend root volume size in gigabytes. Default: `200`
-  * `backend_term`: Delete root volume on VM termination. Default: `true`
-  * `backend_type`: Backend root volume type: Default `io1`
-  * `ebs_optimized`: Deploy EBS optimized root volume. Default `true`
-  * `frontend_flavor`: Frontend default instance type. Default: `r3.xlarge`
-  * `frontend_iops`: Frontend root volume IOPs (when using `io1`). Default: `6000`
-  * `frontend_public`: Frontend default association to public ip. Default: `true`
-  * `frontend_size`: Frontend root volume size in gigabytes. Default: `200`
-  * `frontend_term`: Delete root volume on VM termination. Default: `true`
-  * `frontend_type`: Frontend root volume type: Default `io1`
-  * `tags_desc` = "Created using Terraform"
-* `instance_hostname`: Map of frontend and backend base hostnames
-  * `backend`: Chef backend base hostname. Default: `chefbe`
-  * `frontend`: Chef server core base hostname. Default: `chefbe`
-* `instance_keys`: Map of SSH key settings to deploy and access AWS instances
-  * `key_name`: The private key pair name on AWS to use (String)
-  * `key_file`: The full path to the private kye matching `instance_keys["key_name"]` public key on AWS
-* `domain`: Domain name for instances and ELB. Default: `localdomain`
-* `r53_zones`: AWS Route53 zone settings
-  * `internal`: Route53 internal zone ID
-  * `external`: Route53 external zone ID
-* `r53_ttls`: AWS Route53 TTL default settings
-  * `internal`: Time to live setting for internal zone route53 records. Default: `180`
-  * `external`: Time to live setting for external zone route53 records. Default: `180`
+<table>
+  <tr>
+    <th>Variable</th>
+    <th>Key</th>
+    <th>Description</th>
+    <th>Type</th>
+    <th>Default Value</th>
+  </tr>
+  <tr>
+    <td>provider</td>
+    <td></td>
+    <td>AWS provider map</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>access_key</td>
+    <td>AWS access key</td>
+    <td>string</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>region</td>
+    <td>AWS region for deployment</td>
+    <td>string</td>
+    <td>us-east-1</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>secret_key</td>
+    <td>AWS secret</td>
+    <td>string</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>vpc</td>
+    <td></td>
+    <td>AWS VPC settings map</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>cidr</td>
+    <td>CIDR block for VPC</td>
+    <td>string</td>
+    <td>10.20.30.0/24</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>dns_hostnames</td>
+    <td>Support DNS hostnames (required)</td>
+    <td>boolean</td>
+    <td>true</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>dns_support</td>
+    <td>Support DNS in VPC (required)</td>
+    <td>boolean</td>
+    <td>true</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>tags_desc</td>
+    <td>Description tag</td>
+    <td>string</td>
+    <td>Chef HA VPC</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>tenancy</td>
+    <td>AWS instance tenancy</td>
+    <td>string</td>
+    <td>default</td>
+  </tr>
+  <tr>
+    <td>subnets</td>
+    <td></td>
+    <td>AWS subnet settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>`key`</td>
+    <td>AWS AZ to create subnet</td>
+    <td>string</td>
+    <td>us-east-1a<br>us-east-1c<br>us-east-1d<br>us-east-1e</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>`value`</td>
+    <td>Subnet to configure for `key`</td>
+    <td>string</td>
+    <td>10.20.30.0/26<br>10.20.30.64/26<br>10.20.30.128/26<br>10.20.30.192/26</td>
+  </tr>
+  <tr>
+    <td>ssh_cidrs</td>
+    <td></td>
+    <td>List of CIDRs allowing SSH</td>
+    <td>list</td>
+    <td>0.0.0.0/0</td>
+  </tr>
+  <tr>
+    <td>ami</td>
+    <td></td>
+    <td>AWS AMI map</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>`key`</td>
+    <td>Key comprised of of os-type-region</td>
+    <td>string</td>
+    <td>View [variables.tf](variables.tf)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>`value`</td>
+    <td>AWS AMI identifier</td>
+    <td>string</td>
+    <td>View [variables.tf](variables.tf)</td>
+  </tr>
+  <tr>
+    <td>os</td>
+    <td></td>
+    <td>AWS AMI operating system</td>
+    <td>string</td>
+    <td>ubuntu14</td>
+  </tr>
+  <tr>
+    <td>ami_user</td>
+    <td></td>
+    <td>Mapping of AMI OS to AMI username</td>
+    <td>map</td>
+    <td>ubuntu</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>`key`</td>
+    <td>AMI OS</td>
+    <td>string</td>
+    <td>centos7<br>centos6<br>ubuntu16<br>ubuntu14<br>ubuntu12</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>`value`</td>
+    <td>Username for `key`</td>
+    <td>string</td>
+    <td>centos<br>centos<br>ubuntu<br>ubuntu<br>ubuntu</td>
+  </tr>
+  <tr>
+    <td>ssl_certificate</td>
+    <td></td>
+    <td>SSL certificate information</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>cert_file</td>
+    <td>Full path to SSL certificate file</td>
+    <td>string</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>key_file</td>
+    <td>Full path to SSL certificate key file</td>
+    <td>string</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>elb</td>
+    <td></td>
+    <td>AWS ELB settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>certificate</td>
+    <td>AWS identifier for SSL certificate</td>
+    <td>string</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>hostname</td>
+    <td>Base hostname for AWS ELB</td>
+    <td>string</td>
+    <td>chefelb</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>tags_desc</td>
+    <td>Description tag</td>
+    <td>string</td>
+    <td>Created using Terraform</td>
+  </tr>
+  <tr>
+    <td>chef_backend</td>
+    <td></td>
+    <td>Chef backend settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>count</td>
+    <td>Count of chef-backend instances</td>
+    <td>integer</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>version</td>
+    <td>Version of chef-backend to install</td>
+    <td>string</td>
+    <td>1.1.2</td>
+  </tr>
+  <tr>
+    <td>chef_client</td>
+    <td></td>
+    <td>Version of chef-client to install</td>
+    <td>string</td>
+    <td>12.12.15</td>
+  </tr>
+  <tr>
+    <td>chef_mlsa</td>
+    <td></td>
+    <td>Chef MLSA licese acceptance</td>
+    <td>string</td>
+    <td>false</td>
+  </tr>
+  <tr>
+    <td>chef_org</td>
+    <td></td>
+    <td>Chef server organization settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>short</td>
+    <td>Chef server organization short name</td>
+    <td>string</td>
+    <td>chef</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>long</td>
+    <td>Chef server organization long name</td>
+    <td>Chef Organization</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td>chef_server</td>
+    <td></td>
+    <td>Chef server core settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>count</td>
+    <td>Count of chef-server-core instances</td>
+    <td>integer</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>version</td>
+    <td>Version of chef-server-core to install</td>
+    <td>string</td>
+    <td>12.8.0</td>
+  </tr>
+  <tr>
+    <td>chef_user</td>
+    <td></td>
+    <td>Chef initial user settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>email</td>
+    <td>Chef user e-mail address</td>
+    <td>string</td>
+    <td>chef@domain.tld</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>first_name</td>
+    <td>Chef user first name</td>
+    <td>string</td>
+    <td>Chef</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>last_name</td>
+    <td>Chef user last name</td>
+    <td>string</td>
+    <td>User</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>username</td>
+    <td>Chef user username</td>
+    <td>string</td>
+    <td>chef</td>
+  </tr>
+  <tr>
+    <td>instance</td>
+    <td></td>
+    <td>AWS instance settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>backend_flavor</td>
+    <td>AWS instance type for chef-backend</td>
+    <td>string</td>
+    <td>r3.xlarge</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>backend_iops</td>
+    <td>Root volume IOPs on chef-backend instance (`io1`)</td>
+    <td>integer</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>backend_public</td>
+    <td>Associate public IP to chef-backend instance</td>
+    <td>boolean</td>
+    <td>true</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>backend_size</td>
+    <td>Root volume size (GB) on chef-backend instance</td>
+    <td>integer</td>
+    <td>40</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>backend_term</td>
+    <td>Root volume delete on chef-backend instance termination</td>
+    <td>boolean</td>
+    <td>true</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>backend_type</td>
+    <td>Root volume type on chef-backend instance</td>
+    <td>string</td>
+    <td>gp2</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>ebs_optimized</td>
+    <td>Deploy EBS optimized root volume</td>
+    <td>boolean</td>
+    <td>true</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>frontend_flavor</td>
+    <td>AWS instance type for chef-server-core</td>
+    <td>string</td>
+    <td>m4.large</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>frontend_iops</td>
+    <td>Root volume IOPs on chef-server-core instance (`io1`).</td>
+    <td>integer</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>frontend_public</td>
+    <td>Associate public IP to chef-server-core instance</td>
+    <td></td>
+    <td>true</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>frontend_size</td>
+    <td>Root volume size (GB) on chef-server-core instance</td>
+    <td>integer</td>
+    <td>40</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>frontend_term</td>
+    <td>Root volume delete on chef-server-core instance termination</td>
+    <td></td>
+    <td>true</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>frontend_type</td>
+    <td>Root volume type on chef-server-core instance</td>
+    <td>string</td>
+    <td>gp2</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>tags_desc</td>
+    <td>Description name tag for instances.</td>
+    <td></td>
+    <td>Created using Terraform</td>
+  </tr>
+  <tr>
+    <td>instance_hostname</td>
+    <td></td>
+    <td>AWS instance base hostname</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>backend</td>
+    <td>Chef backend base hostname</td>
+    <td>string</td>
+    <td>chefbe</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>frontend</td>
+    <td>Chef server core base hostname</td>
+    <td>string</td>
+    <td>chefbe</td>
+  </tr>
+  <tr>
+    <td>instance_keys</td>
+    <td></td>
+    <td>AWS SSH key settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>key_name</td>
+    <td>AWS key pair</td>
+    <td>string</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>key_file</td>
+    <td>Full path to matching private key</td>
+    <td>string</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>instance_store</td>
+    <td></td>
+    <td>AWS instance store settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>device</td>
+    <td>AWS instance store device name</td>
+    <td>string</td>
+    <td>xvdb</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>enabled</td>
+    <td>Use AWS instance store</td>
+    <td>boolean</td>
+    <td>true</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>filesystem</td>
+    <td>AWS instance store filesystem</td>
+    <td>string</td>
+    <td>ext4</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>mount</td>
+    <td>AWS instance store mount point</td>
+    <td>string</td>
+    <td>/mnt/xvdb</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>mount_options</td>
+    <td>AWS instance store mount options</td>
+    <td>string</td>
+    <td>defaults,noatime,errors=remount-ro</td>
+  </tr>
+  <tr>
+    <td>domain</td>
+    <td></td>
+    <td>Domain name</td>
+    <td>string</td>
+    <td>localdomain</td>
+  </tr>
+  <tr>
+    <td>r53_zones</td>
+    <td></td>
+    <td>AWS Route53 zone settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>internal</td>
+    <td>AWS Route53 internal zone ID</td>
+    <td>string</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>external</td>
+    <td>AWS Route53 external zone ID</td>
+    <td>string</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>r53_ttls</td>
+    <td></td>
+    <td>AWS Route53 TTL settings</td>
+    <td>map</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>internal</td>
+    <td>Internal record TTL setting</td>
+    <td>integer</td>
+    <td>180</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>external</td>
+    <td>External record TTL setting</td>
+    <td>integer</td>
+    <td>180</td>
+  </tr>
+</table>
 
 
-### AMI map and customizing
+### AMI map customization
 
-The below mapping variables construct selection criteria
+There following variables work in concert with each other to set a number of
+required settings ffor this plan to succeed.
 
-* `ami`: AMI selection map comprised of `os`, `instance["(frontend|backend)_type"]` and `aws_region`
-* `ami_user`: Default username selection map based off `ami_os`
+* `ami`: Map of `os`-`instance[..._type]`-`provider[region]` to AMI ID 
+* `ami_user`: Map of AMI OS to default AMI username
+* `os`: String containing OS+Version (i.e. Ubuntu 14.04.x LTS = `ubuntu14`)
+* `provider[region]`: AWS region
 
-To override this, construct the maps in the following manner:
+Normally you will not interract with the `ami` map directly, however if you
+want to override the AMI selected take note of the following example.
 
-```
+Example: Use newer AMI for default `ubuntu14` requires a simple `ami` override:
+
+```hcl
 ami = {
-  myos-io1-us-west-1 = "ami-________"
-}
-os = "myos"
-ami_user = {
-  myos = "myloginuser"
-}
-
-instance = {
-  ...
-  backend_type = "io1"
-  ...
+  ubuntu14-gp2-us-east-1 = "ami-ffffffff"
 }
 ```
 
-Defaults for `os` map:
+Example: Custom AMI user with custom AMI image
 
-* centos6
-* centos7
-* ubuntu12
-* ubuntu14 (default)
-* ubuntu16
+```hcl
+os = "myos"
+ami = {
+  myos-gp2-us-east-1 = "ami-ffffffff"
+}
+ami_user = {
+  myos = "someuser"
+}
+```
 
-Default region in `provider["region"]` should likely be one of the following:
+Example: Using existing AMIs but with an io1 root volume on chef-backend
 
-* us-east-1 (default)
-* us-west-2
-* us-west-1
-* eu-central-1
-* eu-west-1
-* ap-southeast-1
-* ap-southeast-2
-* ap-northeast-1
-* ap-northeast-2
-* sa-east-1
-* Custom (must be an AWS region, requires setting `ami_map` and setting AMI value)
+```hcl
+instance = {
+  backend_flavor  = "r3.xlarge"
+  backend_iops    = 6000
+  backend_public  = true
+  backend_size    = 200
+  backend_term    = true
+  backend_type    = "io1"
+  ebs_optimized   = true
+  frontend_flavor = "m4.large"
+  frontend_iops   = 0
+  frontend_public = true
+  frontend_size   = 40
+  frontend_term   = true
+  frontend_type   = "gp2"
+  tags_desc       = "Created using Terraform"
+}
+```
+
+Defaults in `ami_user` map:
+
+<table>
+  <tr>
+    <th>Key</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>centos7</td>
+    <td>centos</td>
+  </tr>
+  <tr>
+    <td>centos6</td>
+    <td>centos</td>
+  </tr>
+  <tr>
+    <td>ubuntu16</td>
+    <td>ubuntu</td>
+  </tr>
+  <tr>
+    <td>ubuntu14</td>
+    <td>ubuntu</td>
+  </tr>
+  <tr>
+    <td>ubuntu12</td>
+    <td>ubuntu</td>
+  </tr>
+</table>
 
 
 ## Outputs
