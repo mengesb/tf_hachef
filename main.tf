@@ -254,6 +254,20 @@ resource "aws_instance" "chef-backends" {
   provisioner "remote-exec" {
     script = "${path.module}/files/disable_firewall.sh"
   }
+  # Setup instance storage
+  provisioner "file" {
+    source      = "${path.module}/files/instance_store.bash"
+    destination = "/tmp/instance_store.bash"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "#!/usr/bin/env bash",
+      "sudo chmod a+x /tmp/instance_store.bash",
+      "sudo cp /etc/fstab /tmp/fstab.before",
+      "sudo /tmp/instance_store.bash -d ${var.instance_store["device"]} -e ${var.instance_store["enabled"]} -f ${var.instance_store["filesystem"]} -m ${var.instance_store["mount"]} -o '${var.instance_store["mount_options"]}' -v",
+      "cp /etc/fstab /tmp/fstab.after",
+    ]
+  }
   # Put cookbooks
   provisioner "remote-exec" {
     script = "${path.module}/files/chef-cookbooks.sh"

@@ -273,11 +273,11 @@ variable "instance" {
   description       = ""
   default           = {
     backend_flavor  = "r3.xlarge"
-    backend_iops    = 6000
+    backend_iops    = 0
     backend_public  = true
-    backend_size    = 200
+    backend_size    = 40
     backend_term    = true
-    backend_type    = "io1"
+    backend_type    = "gp2"
     ebs_optimized   = true
     frontend_flavor = "m4.large"
     frontend_iops   = 0
@@ -302,6 +302,17 @@ variable "instance_keys" {
   default           = {
     key_name        = ""
     key_file        = ""
+  }
+}
+variable "instance_store" {
+  type              = "map"
+  description       = "Instance storage settings"
+  default           = {
+    device          = "xvdb"
+    enabled         = true
+    filesystem      = "ext4"
+    mount           = "/mnt/xvdb"
+    mount_options   = "defaults,noatime,errors=remount-ro"
   }
 }
 variable "domain" {

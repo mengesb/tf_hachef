@@ -79,6 +79,14 @@ These resources will incur charges on your AWS bill. It is your responsibility
 to delete the resources.
 
 
+## Recommendations
+
+The defaults set forth in the [variables.tf](variables.tf) file have been set
+for good reasons. Please note that a good amount of testing went into defining
+these defaults and necessary inputs are defined, for your convenience in
+[terraform.tfvars.example](terraform.tfvars.example)
+
+
 ## Input variables
 
 
@@ -132,11 +140,11 @@ to delete the resources.
   * `last_name`: Chef user last name. Default: `User`
 * `instance`: Map of various AWS instance settings (backend and frontend)
   * `backend_flavor`: Backend default instance type. Default: `r3.xlarge`
-  * `backend_iops`: Backend root volume IOPs (when using `io1`). Default: `6000`
+  * `backend_iops`: Backend root volume IOPs (when using `io1`). Default: `0`
   * `backend_public`: Backend default association to public ip. Default: `true`
-  * `backend_size`: Backend root volume size in gigabytes. Default: `200`
+  * `backend_size`: Backend root volume size in gigabytes. Default: `40`
   * `backend_term`: Delete root volume on VM termination. Default: `true`
-  * `backend_type`: Backend root volume type: Default `io1`
+  * `backend_type`: Backend root volume type: Default `gp2`
   * `ebs_optimized`: Deploy EBS optimized root volume. Default `true`
   * `frontend_flavor`: Frontend default instance type. Default: `r3.xlarge`
   * `frontend_iops`: Frontend root volume IOPs (when using `io1`). Default: `6000`
@@ -151,6 +159,12 @@ to delete the resources.
 * `instance_keys`: Map of SSH key settings to deploy and access AWS instances
   * `key_name`: The private key pair name on AWS to use (String)
   * `key_file`: The full path to the private kye matching `instance_keys["key_name"]` public key on AWS
+* `instance_store`: If the VM has an instance store device, use it
+  * `device`: Block device of instance store. Default `xvdb`
+  * `enabled`: If we want to use the instance store. Default `true`
+  * `filesystem`: Filesystem to format instance store device with. Default `ext4`
+  * `mount`: Mount point for instance store devie. Default: `/mnt/xvdb`
+  * `mount_options`: Options for mount point. Default: `defaults,noatime,errors=remount-ro`
 * `domain`: Domain name for instances and ELB. Default: `localdomain`
 * `r53_zones`: AWS Route53 zone settings
   * `internal`: Route53 internal zone ID
