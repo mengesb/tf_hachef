@@ -8,6 +8,7 @@ v0.2.6 (2016-08-11)
 - Updated root device to use gp2 on backends
 - Added map `instance_store` with reasonable defaults
 - Now using local node instance storage for backends
+- Large documentation overhaul
 
 v0.2.5 (2016-08-10)
 -------------------
