@@ -3,6 +3,11 @@ tf_hachef CHANGELOG
 
 This file is used to list changes made in each version of the tf_hachef Terraform plan.
 
+v0.2.7 (2016-09-20)
+-------------------
+- Updated chef-cookbook script to pin system cookbook to `0.11.0`: xhost-cookbooks/system#49
+- Update syntax; `template_file` resource is deprecated, updated to `data` source
+
 v0.2.6 (2016-08-11)
 -------------------
 - Updated root device to use gp2 on backends

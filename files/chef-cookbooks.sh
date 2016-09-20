@@ -9,8 +9,10 @@ for DEP in chef_handler chef-ingredient ; do curl -sL https://supermarket.chef.i
 for DEP in chef-server chef-sugar       ; do curl -sL https://supermarket.chef.io/cookbooks/${DEP}/download | sudo tar xzC /var/chef/cookbooks; done
 for DEP in compat_resource cron         ; do curl -sL https://supermarket.chef.io/cookbooks/${DEP}/download | sudo tar xzC /var/chef/cookbooks; done
 for DEP in firewall hostsfile logrotate ; do curl -sL https://supermarket.chef.io/cookbooks/${DEP}/download | sudo tar xzC /var/chef/cookbooks; done
-for DEP in packagecloud system yum      ; do curl -sL https://supermarket.chef.io/cookbooks/${DEP}/download | sudo tar xzC /var/chef/cookbooks; done
+for DEP in packagecloud        yum      ; do curl -sL https://supermarket.chef.io/cookbooks/${DEP}/download | sudo tar xzC /var/chef/cookbooks; done
 for DEP in yum-chef windows             ; do curl -sL https://supermarket.chef.io/cookbooks/${DEP}/download | sudo tar xzC /var/chef/cookbooks; done
+
+curl -sL https://supermarket.chef.io/cookbooks/system/versions/0.11.0/download | sudo tar xzC /var/chef/cookbooks
 
 sudo chown -R root:root /var/chef
 

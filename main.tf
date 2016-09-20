@@ -215,7 +215,7 @@ resource "null_resource" "chef-prep" {
   }
 }
 # Chef provisiong backend attributes_json and dna.json templating
-resource "template_file" "backend-attributes-json" {
+data "template_file" "backend-attributes-json" {
   count     = "${var.chef_backend["count"]}"
   template  = "${file("${path.module}/files/backend-attributes-json.tpl")}"
   vars {
@@ -276,7 +276,7 @@ resource "aws_instance" "chef-backends" {
   provisioner "remote-exec" {
     inline = [
       "cat > /tmp/dna.json <<EOF",
-      "${element(template_file.backend-attributes-json.*.rendered, count.index)}",
+      "${element(data.template_file.backend-attributes-json.*.rendered, count.index)}",
       "EOF",
     ]
   }
@@ -377,7 +377,7 @@ resource "aws_route53_record" "chef-backends-public" {
 #
 # Frontend: chef-server-core
 # Chef provisiong frontend attributes_json and dna.json templating
-resource "template_file" "frontend-attributes-json" {
+data "template_file" "frontend-attributes-json" {
   count      = "${var.chef_server["count"]}"
   template   = "${file("${path.module}/files/frontend-attributes-json.tpl")}"
   vars {
@@ -431,7 +431,7 @@ resource "aws_instance" "chef-frontends" {
   provisioner "remote-exec" {
     inline = [
       "cat > /tmp/dna.json <<EOF",
-      "${element(template_file.frontend-attributes-json.*.rendered, count.index)}",
+      "${element(data.template_file.frontend-attributes-json.*.rendered, count.index)}",
       "EOF",
     ]
   }

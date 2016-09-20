@@ -22,7 +22,7 @@ the requirements are extensive
   * Route53 internal and external zones
   * Uploaded to AWS a SSL certificate (wildcard preferred)
   * SSL certificate/key for created instance (local files to upload to instances)
-  * Terraform >= 0.6.14
+  * Terraform >= 0.7.3
 * Uses public IPs and public DNS
 * Creates default security group as follows:
   * Frontend:
