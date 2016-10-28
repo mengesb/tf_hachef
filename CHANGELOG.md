@@ -3,6 +3,11 @@ tf_hachef CHANGELOG
 
 This file is used to list changes made in each version of the tf_hachef Terraform plan.
 
+v0.2.9 (2016-10-28)
+-------------------
+- Added ETCD tunable variables and implementation
+- Update `private_key` for `connection` to use `${file()}` interpolation
+
 v0.2.8 (2016-10-28)
 -------------------
 - Updated repo structure to prepare for multiple providers and plans per provider feature set.
