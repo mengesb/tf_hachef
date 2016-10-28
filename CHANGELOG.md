@@ -3,6 +3,11 @@ tf_hachef CHANGELOG
 
 This file is used to list changes made in each version of the tf_hachef Terraform plan.
 
+v0.2.8 (2016-10-28)
+-------------------
+- Updated repo structure to prepare for multiple providers and plans per provider feature set.
+- Documentation updates
+
 v0.2.7 (2016-09-20)
 -------------------
 - Updated chef-cookbook script to pin system cookbook to `0.11.0`: xhost-cookbooks/system#49

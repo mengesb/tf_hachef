@@ -12,6 +12,7 @@ security group rules, frontend nodes (chef-server-core), backend nodes
 This plan is rather large and complex. Be sure to read through the
 [README](README.md) in full.
 
+
 ## Assumptions
 
 This terraform plan is designed for near-production use. Please take note as
@@ -759,7 +760,7 @@ yoursef with the [contributing](CONTRIBUTING.md) before making/submitting change
 
 ## CHANGELOG
 
-Please refer to the [`CHANGELOG.md`](CHANGELOG.md)
+Please refer to the [CHANGELOG.md](CHANGELOG.md)
 
 
 ## License
