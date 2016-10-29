@@ -367,21 +367,32 @@ data "template_file" "etcd_settings" {
     input = "${element(values(var.etcd_settings), count.index)}"
   }
 }
+resource "null_resource" "etcd_files" {
+  count = "${length(var.etcd_settings)}"
+  provisioner "local-exec" {
+    command = <<-EOC
+      mkdir -p etcd_configs
+      tee etcd_configs/etcd_config.${count.index}.bash <<EOF
+      ${element(data.template_file.etcd_settings.*.rendered, count.index)}
+      EOF
+      EOC
+  }
+}
 resource "null_resource" "etcd_configure" {
-  depends_on = ["null_resource.establish_leader","null_resource.follow_leader"]
-  count = "${var.chef_backend["count"] * length(var.etcd_settings)}"
+  depends_on = ["null_resource.establish_leader","null_resource.follow_leader","null_resource.etcd_files"]
+  count = "${var.chef_backend["count"]}"
   connection {
-    host        = "${element(aws_instance.chef-backends.*.public_ip, count.index % var.chef_backend["count"])}"
+    host        = "${element(aws_instance.chef-backends.*.public_ip, count.index)}"
     user        = "${var.ami_user[var.os]}"
     private_key = "${file("${var.instance_keys["key_file"]}")}"
   }
   provisioner "file" {
-    content = "${element(data.template_file.etcd_settings.*.rendered, (count.index % var.chef_backend["count"]))}"
-    destination = "/tmp/etcd_settings.${count.index % length(var.etcd_settings)}.bash"
+    source      = "etcd_configs"
+    destination = "/tmp/"
   }
   provisioner "remote-exec" {
     inline = [
-      "bash /tmp/etcd_settings.${count.index % length(var.etcd_settings)}.bash",
+      "for F in $(ls /tmp/etcd_configs); do bash /tmp/etcd_configs/$F; done",
     ]
   }
 }
