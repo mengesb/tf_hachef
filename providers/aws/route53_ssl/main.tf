@@ -248,7 +248,7 @@ resource "aws_instance" "chef-backends" {
   connection {
     host        = "${self.public_ip}"
     user        = "${var.ami_user[var.os]}"
-    private_key = "${var.instance_keys["key_file"]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
   }
   # Setup
   provisioner "remote-exec" {
@@ -302,7 +302,7 @@ resource "null_resource" "establish_leader" {
   connection {
     host        = "${aws_instance.chef-backends.0.public_ip}"
     user        = "${var.ami_user[var.os]}"
-    private_key = "${var.instance_keys["key_file"]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
   }
   provisioner "remote-exec" {
     inline = [
@@ -335,7 +335,7 @@ resource "null_resource" "follow_leader" {
   connection {
     host        = "${element(aws_instance.chef-backends.*.public_ip, count.index + 1)}"
     user        = "${var.ami_user[var.os]}"
-    private_key = "${var.instance_keys["key_file"]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
   }
   provisioner "file" {
     source      = ".chef/chef-backend-secrets.json"
@@ -356,6 +356,59 @@ resource "null_resource" "follow_leader" {
   # Release cluster joining lock
   provisioner "local-exec" {
     command = "rm -f /tmp/configuring.${sha256(element(aws_instance.chef-backends.*.id, count.index + 1))}"
+  }
+}
+data "template_file" "etcd_settings" {
+  count = "${length(var.etcd_settings)}"
+  template = "${file("${path.module}/files/etcd_template.bash.tpl")}"
+  vars {
+    path = "${var.etcd_path}"
+    file = "${element(keys(var.etcd_settings), count.index)}"
+    input = "${element(values(var.etcd_settings), count.index)}"
+  }
+}
+resource "null_resource" "etcd_files" {
+  count = "${length(var.etcd_settings)}"
+  provisioner "local-exec" {
+    command = <<-EOC
+      mkdir -p etcd_configs
+      [ -f etcd_configs/etcd_config.${count.index}.bash ] && rm -f etcd_configs/etcd_config.${count.index}.bash
+      tee etcd_configs/etcd_config.${count.index}.bash <<EOF
+      ${element(data.template_file.etcd_settings.*.rendered, count.index)}
+      EOF
+      EOC
+  }
+}
+resource "null_resource" "etcd_configure" {
+  depends_on = ["null_resource.establish_leader","null_resource.follow_leader","null_resource.etcd_files"]
+  count = "${var.chef_backend["count"]}"
+  connection {
+    host        = "${element(aws_instance.chef-backends.*.public_ip, count.index)}"
+    user        = "${var.ami_user[var.os]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
+  }
+  provisioner "file" {
+    source      = "etcd_configs"
+    destination = "/tmp/"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "for F in $(ls /tmp/etcd_configs); do bash /tmp/etcd_configs/$F; done",
+    ]
+  }
+}
+resource "null_resource" "etcd_restart" {
+  depends_on = ["null_resource.etcd_configure"]
+  count = "${var.chef_backend["count"]}"
+  connection {
+    host        = "${element(aws_instance.chef-backends.*.public_ip, count.index % var.chef_backend["count"])}"
+    user        = "${var.ami_user[var.os]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "${var.etcd_restart_cmd}"
+    ]
   }
 }
 resource "aws_route53_record" "chef-backends-private" {
@@ -407,7 +460,7 @@ resource "aws_instance" "chef-frontends" {
   connection {
     host        = "${self.public_ip}"
     user        = "${var.ami_user[var.os]}"
-    private_key = "${var.instance_keys["key_file"]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
   }
   # Setup
   provisioner "remote-exec" {
@@ -468,7 +521,7 @@ resource "null_resource" "generate_frontend_cfg" {
   connection {
     host        = "${aws_instance.chef-backends.0.public_ip}"
     user        = "${var.ami_user[var.os]}"
-    private_key = "${var.instance_keys["key_file"]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
   }
   # Generate chef server configuration
   provisioner "remote-exec" {
@@ -489,7 +542,7 @@ resource "null_resource" "generate_frontend_cfg" {
     connection {
       host        = "${aws_instance.chef-backends.0.public_ip}"
       user        = "${var.ami_user[var.os]}"
-      private_key = "${var.instance_keys["key_file"]}"
+      private_key = "${file("${var.instance_keys["key_file"]}")}"
     }
     inline = [
       "sudo rm -f /tmp/chef-server.rb.${sha256(element(aws_instance.chef-frontends.*.tags.Name, count.index))}",
@@ -500,7 +553,7 @@ resource "null_resource" "generate_frontend_cfg" {
     connection {
       host        = "${element(aws_instance.chef-frontends.*.public_ip, count.index)}"
       user        = "${var.ami_user[var.os]}"
-      private_key = "${var.instance_keys["key_file"]}"
+      private_key = "${file("${var.instance_keys["key_file"]}")}"
     }
     source      = ".chef/chef-server.rb.${sha256(element(aws_instance.chef-frontends.*.tags.Name, count.index))}"
     destination = "/tmp/chef-server.rb.${sha256(element(aws_instance.chef-frontends.*.tags.Name, count.index))}"
@@ -512,7 +565,7 @@ resource "null_resource" "first_frontend" {
   connection {
     host        = "${element(aws_instance.chef-frontends.*.public_ip, count.index)}"
     user        = "${var.ami_user[var.os]}"
-    private_key = "${var.instance_keys["key_file"]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
   }
   provisioner "remote-exec" {
     inline = [
@@ -538,7 +591,7 @@ resource "null_resource" "other_frontends" {
   connection {
     host        = "${element(aws_instance.chef-frontends.*.public_ip, count.index + 1)}"
     user        = "${var.ami_user[var.os]}"
-    private_key = "${var.instance_keys["key_file"]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
   }
   # Put chef-frontend.tgz
   provisioner "file" {
@@ -587,7 +640,7 @@ resource "null_resource" "chef-setup" {
   connection {
     host        = "${aws_instance.chef-frontends.0.public_ip}"
     user        = "${var.ami_user[var.os]}"
-    private_key = "${var.instance_keys["key_file"]}"
+    private_key = "${file("${var.instance_keys["key_file"]}")}"
   }
   # TODO: Maybe create parametertized script to run these commands (wrapping chef-server-ctl)
   provisioner "remote-exec" {

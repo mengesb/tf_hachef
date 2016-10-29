@@ -4,3 +4,4 @@ terraform.tfvars
 *.swp*
 .chef
 logfiles
+etcd_configs

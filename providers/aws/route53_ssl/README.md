@@ -645,6 +645,24 @@ these defaults and necessary inputs are defined, for your convenience in
     <td>integer</td>
     <td>180</td>
   </tr>
+  <tr>
+    <td>etcd_path</td>
+    <td></td>
+    <td>Path to configure ETCD settings</td>
+    <td>`/opt/chef-backend/service/etcd/env`</td>
+  </tr>
+  <tr>
+    <td>etcd_settings</td>
+    <td></td>
+    <td>Map of settings for ETCD configuration. Key is setting name, value is the value</td>
+    <td>ETCD_HEARTBEAT_INTERVAL = 600<br>ETCD_ELECTION_TIMEOUT   = 6000<br>ETCD_SNAPSHOT_COUNT     = 5000</td>
+  </tr>
+  <tr>
+    <td>etcd_restart_cmd</td>
+    <td></td>
+    <td>Command issued to restart ETCD service</td>
+    <td>sudo chef-backend-ctl restart etcd</td>
+  </tr>
 </table>
 
 

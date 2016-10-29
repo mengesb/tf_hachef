@@ -338,4 +338,26 @@ variable "r53_ttls" {
     internal        = "180"
   }
 }
+#
+# ETCD settings
+#
+variable "etcd_path" {
+  type = "string"
+  description = "Path to configure ETCD settings"
+  default = "/opt/chef-backend/service/etcd/env"
+}
+variable "etcd_settings" {
+  type = "map"
+  description = "Various ETCD settings"
+  default = {
+    ETCD_HEARTBEAT_INTERVAL = 600
+    ETCD_ELECTION_TIMEOUT   = 6000
+    ETCD_SNAPSHOT_COUNT     = 5000
+  }
+}
+variable "etcd_restart_cmd" {
+  type = "string"
+  description = "Command issued to restart ETCD service"
+  default = "sudo chef-backend-ctl restart etcd"
+}
 
