@@ -372,6 +372,7 @@ resource "null_resource" "etcd_files" {
   provisioner "local-exec" {
     command = <<-EOC
       mkdir -p etcd_configs
+      [ -f etcd_configs/etcd_config.${count.index}.bash ] && rm -f etcd_configs/etcd_config.${count.index}.bash
       tee etcd_configs/etcd_config.${count.index}.bash <<EOF
       ${element(data.template_file.etcd_settings.*.rendered, count.index)}
       EOF
