@@ -4,12 +4,12 @@ case ${1,,} in
 
   1)     exit 0 ;;
 
-  false) echo "Please set acept_license = \"true\" in terraform.tfvars"
+  false) echo "Please set accept_license = \"true\" in terraform.tfvars"
          exit 1 ;;
 
-  0)     echo "Please set acept_license = \"true\" in terraform.tfvars"
+  0)     echo "Please set accept_license = \"true\" in terraform.tfvars"
          exit 1 ;;
 
-  *)     echo "Please set acept_license = \"true\" in terraform.tfvars"
+  *)     echo "Please set accept_license = \"true\" in terraform.tfvars"
          exit 1 ;;
 esac
