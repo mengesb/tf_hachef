@@ -60,7 +60,7 @@ per plan.
 ## Contributors
 
 * [Brian Menges](https://github.com/mengesb)
-
+* [Kevin Dickerson, Loom](https://loom.technology)
 
 ## Runtime sample
 
