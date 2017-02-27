@@ -3,6 +3,10 @@ tf_hachef CHANGELOG
 
 This file is used to list changes made in each version of the tf_hachef Terraform plan.
 
+v0.2.10 (2017-02-23)
+--------------------
+- Fixed typo in a warning message relating to accepting Chef license
+
 v0.2.9 (2016-10-29)
 -------------------
 - Added ETCD tunable variables and implementation
