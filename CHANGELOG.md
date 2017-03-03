@@ -3,6 +3,10 @@ tf_hachef CHANGELOG
 
 This file is used to list changes made in each version of the tf_hachef Terraform plan.
 
+v0.3.0 (2017-03-03)
+- Adds `enterprise` module, designed to be used as a module
+- Adds ability to specify an ELB name, `elb["tf_resource_name"]`, which is useful if the computed name is longer than 32 characters
+
 v0.2.10 (2017-02-23)
 --------------------
 - Fixed typo in a warning message relating to accepting Chef license

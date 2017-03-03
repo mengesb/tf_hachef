@@ -1,7 +1,8 @@
 terraform.tfstate*
-terraform.tfvars
+providers/aws/route53_ssl/terraform.tfvars
 .terraform
 *.swp*
 .chef
 logfiles
 etcd_configs
+.DS_Store
